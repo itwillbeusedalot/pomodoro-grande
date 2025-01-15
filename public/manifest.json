@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Site Blocker",
+  "version": "1.0",
+  "description": "Block websites",
+  "permissions": ["activeTab", "storage", "topSites", "webRequest", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Site Blocker"
+  },
+  "host_permissions": ["<all_urls>"]
+}
