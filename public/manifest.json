@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Site Blocker",
+  "name": "Productivity Buddy",
   "version": "1.0",
   "description": "Block websites",
   "permissions": ["activeTab", "storage", "topSites", "webRequest", "tabs"],
