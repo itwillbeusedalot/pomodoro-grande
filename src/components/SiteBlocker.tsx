@@ -1,25 +1,18 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Switch } from "./ui/switch";
-// import browser from "webextension-polyfill";
+import browser from "webextension-polyfill";
 
 const SiteBlocker = () => {
   const [sites, setSites] = useState<string[]>([]);
   const [newSite, setNewSite] = useState("");
 
-  // useEffect(() => {
-  //   // Load URLs from storage on mount
-  //   browser.storage.local.get("urls").then((result) => {
-  //     if (result.urls) setSites(result.urls as string[]);
-  //   });
-
-  //   browser.storage.local.get("isEnabled").then((result) => {
-  //     if (result.isEnabled !== undefined) {
-  //       setIsEnabled(result.isEnabled as boolean);
-  //     }
-  //   });
-  // }, []);
+  useEffect(() => {
+    // Load URLs from storage on mount
+    browser.storage.local.get("urls").then((result) => {
+      if (result.urls) setSites(result.urls as string[]);
+    });
+  }, []);
 
   const addSite = (e: FormEvent) => {
     e.preventDefault();
@@ -27,14 +20,14 @@ const SiteBlocker = () => {
     if (newSite && !sites.includes(newSite)) {
       setSites([...sites, newSite]);
       setNewSite("");
-      // browser.storage.local.set({ urls: [...sites, newSite] });
+      browser.storage.local.set({ urls: [...sites, newSite] });
     }
   };
 
   const removeSite = (siteToRemove: string) => {
     const updatedSites = sites.filter((site) => site !== siteToRemove);
     setSites(updatedSites);
-    // browser.storage.local.set({ urls: updatedSites });
+    browser.storage.local.set({ urls: updatedSites });
   };
 
   return (

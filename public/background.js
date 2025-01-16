@@ -1,60 +1,77 @@
-const REDIRECT_URL = "https://example.com";
+const DEFAULT_TIME = 1000 * 60 * 25;
 
-let isEnabled = true;
+let isRunning = false;
+let time = DEFAULT_TIME;
+let interval;
 
-chrome.storage.local.get("isEnabled", (result) => {
-  isEnabled = result.isEnabled ?? true;
+chrome.storage.local.get(["time", "isRunning"], (result) => {
+  time = result.time ?? DEFAULT_TIME;
+  isRunning = result.isRunning ?? false;
+
+  if (isRunning && time > 0) {
+    startTimer();
+  } else {
+    updateBadge(time);
+  }
 });
 
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes.isEnabled) {
-    isEnabled = changes.isEnabled.newValue;
-    console.log("Blocking state changed:", isEnabled);
-  }
-});
+  if (changes.isRunning) {
+    isRunning = changes.isRunning.newValue;
 
-const getBlockedSites = async () => {
-  const { urls } = await chrome.storage.local.get("urls");
-  return urls || [];
-};
-
-const isBlockedSite = (url, blockedSites) => {
-  return blockedSites.some((site) => url.includes(site));
-};
-
-const handleRequests = async (details) => {
-  if (!isEnabled) return { cancel: false };
-
-  if (details.url.includes(REDIRECT_URL)) {
-    return { cancel: false };
+    if (isRunning) {
+      startTimer();
+    } else {
+      stopTimer();
+    }
   }
 
-  const blockedSites = await getBlockedSites();
-
-  if (isBlockedSite(details.url, blockedSites)) {
-    return { redirectUrl: REDIRECT_URL };
-  }
-
-  return { cancel: false };
-};
-
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (!isEnabled) return;
-
-  // Only check when the URL has changed and the page has finished loading
-  if (changeInfo.url || (changeInfo.status === "complete" && tab.url)) {
-    const url = changeInfo.url || tab.url;
-
-    if (url.includes(REDIRECT_URL)) return;
-
-    const blockedSites = await getBlockedSites();
-
-    if (isBlockedSite(url, blockedSites)) {
-      chrome.tabs.update(tabId, { url: REDIRECT_URL });
+  if (changes.time) {
+    time = changes.time.newValue;
+    if (!isRunning) {
+      updateBadge(time);
     }
   }
 });
 
-chrome.webRequest.onBeforeRequest.addListener(handleRequests, {
-  urls: ["<all_urls>"],
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
+  updateBadge(time);
 });
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === "updateBadge") {
+    if (message.text) updateBadge(message.text);
+  }
+});
+
+const startTimer = () => {
+  clearInterval(interval);
+
+  interval = setInterval(() => {
+    time -= 1000;
+
+    if (time <= 0) {
+      time = DEFAULT_TIME;
+      stopTimer();
+
+      chrome.storage.local.set({ isRunning: false, time });
+    } else {
+      if (time % 1000 === 0) {
+        updateBadge(time);
+      }
+    }
+
+    updateBadge(time);
+  }, 1000);
+};
+
+const stopTimer = () => {
+  clearInterval(interval);
+  updateBadge(DEFAULT_TIME);
+};
+
+const updateBadge = (time) => {
+  const formattedTime = new Date(time).toISOString().slice(14, 19);
+  chrome.action.setBadgeText({ text: formattedTime });
+};

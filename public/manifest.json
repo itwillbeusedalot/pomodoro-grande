@@ -3,10 +3,16 @@
   "name": "Productivity Buddy",
   "version": "1.0",
   "description": "Block websites",
-  "permissions": ["activeTab", "storage", "topSites", "webRequest", "tabs"],
+  "permissions": ["activeTab", "storage", "webRequest", "tabs"],
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
   "action": {
     "default_popup": "index.html",
     "default_title": "Site Blocker"

@@ -37,7 +37,6 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
-          custom: "#53BE77",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
