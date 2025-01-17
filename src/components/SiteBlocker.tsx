@@ -6,6 +6,7 @@ import browser from "webextension-polyfill";
 const SiteBlocker = () => {
   const [sites, setSites] = useState<string[]>([]);
   const [newSite, setNewSite] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     // Load URLs from storage on mount
@@ -17,10 +18,24 @@ const SiteBlocker = () => {
   const addSite = (e: FormEvent) => {
     e.preventDefault();
 
-    if (newSite && !sites.includes(newSite)) {
-      setSites([...sites, newSite]);
+    const urlRegex = /^(https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+    const match = newSite.match(urlRegex);
+
+    if (!match) {
+      setError(
+        "Invalid domain or URL. Please enter a valid site (e.g., example.com or https://example.com)."
+      );
+      return;
+    }
+
+    const domain = match[2]; // Extract the valid domain
+    if (domain && !sites.includes(domain)) {
+      setSites([...sites, domain]);
       setNewSite("");
-      browser.storage.local.set({ urls: [...sites, newSite] });
+      setError("");
+      browser.storage.local.set({ urls: [...sites, domain] });
+    } else if (sites.includes(domain)) {
+      setError("This domain is already in the list.");
     }
   };
 
@@ -49,6 +64,7 @@ const SiteBlocker = () => {
           Add
         </Button>
       </form>
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       <ul className="custom-scrollbar max-h-[10rem] overflow-y-auto">
         {sites.map((site, index) => (
           <li

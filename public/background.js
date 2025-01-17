@@ -65,7 +65,7 @@ const startTimer = () => {
       createNotification();
 
       if (isBreak) {
-        unblockAllSites();
+        unBlockAllSites();
       } else {
         blockAllSites();
       }
@@ -86,7 +86,7 @@ const stopTimer = async () => {
   chrome.storage.local.set({ isRunning, time });
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
-  unblockAllSites();
+  unBlockAllSites();
 };
 
 const updateBadge = (time) => {
