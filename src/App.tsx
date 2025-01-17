@@ -3,10 +3,6 @@ import Navbar from "./components/common/Navbar";
 import Settings from "./components/Settings";
 import SiteBlocker from "./components/SiteBlocker";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Button } from "./components/ui/button";
-import { useEffect, useState } from "react";
-import { FIVE_MINUTES, DEFAULT_TIME, ONE_HOUR } from "./constants";
-import browser from "webextension-polyfill";
 import PomodoroTimer from "./components/PomodoroTimer";
 
 const App = () => {

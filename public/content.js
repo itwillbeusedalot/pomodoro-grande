@@ -28,7 +28,7 @@ const createFocusOverlay = () => {
 
   overlay.innerHTML = `
     <h1 style="margin-bottom: 20px;">KEEP YOUR FOCUS!</h1>
-    <p style="font-size: 24px;">${new Date(time)
+    <p style="font-size: 24px;">Time remaining: ${new Date(time)
       .toISOString()
       .slice(14, 19)}</p>
   `;
@@ -43,11 +43,14 @@ const removeFocusOverlay = () => {
 };
 
 // Initialize state from storage
-chrome.storage.local.get(["time", "isRunning"], (result) => {
+chrome.storage.local.get(["time", "isRunning"], async (result) => {
   time = result.time ?? DEFAULT_TIME;
   isRunning = result.isRunning ?? false;
 
-  if (isRunning && time > 0) {
+  const currentUrl = window.location.href;
+  const blockedSites = await getBlockedSites();
+
+  if (isRunning && time > 0 && isBlockedSite(currentUrl, blockedSites)) {
     createFocusOverlay();
   } else {
     removeFocusOverlay();
@@ -55,7 +58,7 @@ chrome.storage.local.get(["time", "isRunning"], (result) => {
 });
 
 // Listen for changes to storage
-chrome.storage.onChanged.addListener((changes) => {
+chrome.storage.onChanged.addListener(async (changes) => {
   if (changes.isRunning) {
     isRunning = changes.isRunning.newValue;
   }
@@ -64,7 +67,10 @@ chrome.storage.onChanged.addListener((changes) => {
     time = changes.time.newValue;
   }
 
-  if (isRunning) {
+  const currentUrl = window.location.href;
+  const blockedSites = await getBlockedSites();
+
+  if (isRunning && time > 0 && isBlockedSite(currentUrl, blockedSites)) {
     createFocusOverlay();
   } else {
     removeFocusOverlay();

@@ -1,7 +1,3 @@
-import Header from "./common/Header";
-import Navbar from "./common/Navbar";
-import Settings from "./Settings";
-import SiteBlocker from "./SiteBlocker";
 import { Tabs, TabsContent } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
@@ -13,11 +9,8 @@ const PomodoroTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
-    browser.storage.local.get("time").then((result) => {
+    browser.storage.local.get(["time", "isRunning"]).then((result) => {
       if (result.time) setTime(result.time as number);
-    });
-
-    browser.storage.local.get("isRunning").then((result) => {
       setIsRunning((result.isRunning as boolean) || false);
     });
   }, []);
