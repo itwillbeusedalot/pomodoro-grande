@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Productivity Buddy",
   "version": "1.0",
-  "description": "Block websites",
+  "description": "A productivity extension that blocks distracting websites and helps users stay focused with a timer.",
   "permissions": [
     "activeTab",
     "storage",

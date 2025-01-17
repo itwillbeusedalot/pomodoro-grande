@@ -14,7 +14,6 @@ const PomodoroTimer = () => {
         "time",
         "isRunning",
         "isBreak",
-        "sessions",
       ]);
       setTime((result.time as number) ?? 0);
       setIsRunning((result.isRunning as boolean) ?? false);
@@ -51,7 +50,7 @@ const PomodoroTimer = () => {
       value="timer"
       className="flex flex-col items-center justify-center gap-6"
     >
-      <div className="text-center space-y-2 mt-6">
+      <div className="text-center space-y-2 mt-10">
         <p
           className={`${
             isBreak ? "text-red-500" : "text-primary-custom"
@@ -87,12 +86,6 @@ const PomodoroTimer = () => {
             Start
           </Button>
         )}
-      </div>
-
-      <div className="text-center text-primary-custom">
-        <p>25 mins work</p>
-        <p>5 mins break</p>
-        <p>4 sessions</p>
       </div>
     </TabsContent>
   );

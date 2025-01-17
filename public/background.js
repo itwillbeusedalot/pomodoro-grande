@@ -1,6 +1,6 @@
-const WORK_TIME = 1000 * 60 * 1;
-const BREAK_TIME = 1000 * 60 * 1;
-const SESSIONS = 4;
+let WORK_TIME = 1000 * 60 * 25;
+let BREAK_TIME = 1000 * 60 * 5;
+let SESSIONS = 4;
 
 let isRunning = false;
 let time = WORK_TIME;
@@ -31,7 +31,15 @@ chrome.storage.onChanged.addListener(async (changes) => {
 
   if (changes.time) {
     time = changes.time.newValue;
-    if (!isRunning) updateBadge(time);
+
+    if (!isRunning) {
+      WORK_TIME = changes.time.newValue;
+      updateBadge(WORK_TIME);
+    }
+  }
+
+  if (changes.breakTime) {
+    BREAK_TIME = changes.breakTime.newValue;
   }
 
   if (changes.isBreak) {
@@ -40,6 +48,14 @@ chrome.storage.onChanged.addListener(async (changes) => {
 
   if (changes.urls && isRunning) {
     blockAllSites();
+  }
+
+  if (changes.sessions) {
+    sessions = changes.sessions.newValue;
+
+    if (!isRunning) {
+      SESSIONS = changes.sessions.newValue;
+    }
   }
 });
 
@@ -83,7 +99,7 @@ const stopTimer = async () => {
   isRunning = false;
   isBreak = false;
   sessions = SESSIONS;
-  chrome.storage.local.set({ isRunning, time });
+  chrome.storage.local.set({ isRunning, time, isBreak, sessions });
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
   unBlockAllSites();
