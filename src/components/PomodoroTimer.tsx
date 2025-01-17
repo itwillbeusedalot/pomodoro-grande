@@ -2,7 +2,6 @@ import { TabsContent } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
-import { WORK_TIME } from "@/constants";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
@@ -43,7 +42,6 @@ const PomodoroTimer = () => {
   const stopTimer = () => {
     browser.storage.local.set({
       isRunning: false,
-      time: WORK_TIME,
       isBreak: false,
     });
   };

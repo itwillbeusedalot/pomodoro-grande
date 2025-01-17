@@ -8,7 +8,9 @@
     "storage",
     "webRequest",
     "tabs",
-    "notifications"
+    "notifications",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback"
   ],
   "background": {
     "service_worker": "background.js"

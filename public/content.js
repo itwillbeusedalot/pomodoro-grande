@@ -27,7 +27,7 @@ const createFocusOverlay = () => {
   }
 
   overlay.innerHTML = `
-    <h1 style="margin-bottom: 20px;">KEEP YOUR FOCUS!</h1>
+    <h1 style="margin-bottom: 20px;">Stay Focused!</h1>
     <p style="font-size: 24px;">Time remaining: ${new Date(time)
       .toISOString()
       .slice(14, 19)}</p>

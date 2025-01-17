@@ -8,12 +8,17 @@ let interval;
 let isBreak = false;
 let sessions = SESSIONS;
 
+const getBlockedSites = async () => {
+  const { urls } = await chrome.storage.local.get("urls");
+  return urls || [];
+};
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
 });
 
-chrome.storage.onChanged.addListener((changes) => {
+chrome.storage.onChanged.addListener(async (changes) => {
   if (changes.isRunning) {
     isRunning = changes.isRunning.newValue;
 
@@ -26,18 +31,21 @@ chrome.storage.onChanged.addListener((changes) => {
 
   if (changes.time) {
     time = changes.time.newValue;
-    if (!isRunning) {
-      updateBadge(time);
-    }
+    if (!isRunning) updateBadge(time);
   }
 
   if (changes.isBreak) {
     isBreak = changes.isBreak.newValue;
   }
+
+  if (changes.urls && isRunning) {
+    blockAllSites();
+  }
 });
 
 const startTimer = () => {
   clearInterval(interval);
+  blockAllSites();
 
   interval = setInterval(() => {
     if (sessions === 0) {
@@ -55,6 +63,12 @@ const startTimer = () => {
       const badgeColor = isBreak ? "#ffccd5" : "#40A662";
       chrome.action.setBadgeBackgroundColor({ color: badgeColor });
       createNotification();
+
+      if (isBreak) {
+        unblockAllSites();
+      } else {
+        blockAllSites();
+      }
     } else {
       chrome.storage.local.set({ time });
     }
@@ -63,7 +77,7 @@ const startTimer = () => {
   }, 1000);
 };
 
-const stopTimer = () => {
+const stopTimer = async () => {
   clearInterval(interval);
   time = WORK_TIME;
   isRunning = false;
@@ -72,6 +86,7 @@ const stopTimer = () => {
   chrome.storage.local.set({ isRunning, time });
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
+  unblockAllSites();
 };
 
 const updateBadge = (time) => {
@@ -90,4 +105,45 @@ const createNotification = () => {
   setTimeout(() => {
     chrome.notifications.clear("reset-notif");
   }, 5000);
+};
+
+const blockAllSites = async () => {
+  const blockedSites = await getBlockedSites();
+
+  const rules = blockedSites.map((site, index) => ({
+    id: index + 1,
+    priority: 1,
+    action: { type: "block" },
+    condition: {
+      urlFilter: `||${site}/`,
+      resourceTypes: ["main_frame"],
+    },
+  }));
+
+  try {
+    const existingRuleIds = await getBlockedSiteIds();
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: existingRuleIds,
+      addRules: rules,
+    });
+  } catch (error) {
+    console.error("Error updating rules:", error);
+  }
+};
+
+const unBlockAllSites = async () => {
+  const existingRuleIds = await getBlockedSiteIds();
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: existingRuleIds,
+  });
+};
+
+const getBlockedSiteIds = async () => {
+  try {
+    const rules = await chrome.declarativeNetRequest.getDynamicRules();
+    return rules.map((rule) => rule.id);
+  } catch (error) {
+    console.error("Error getting existing rules:", error);
+    return [];
+  }
 };
