@@ -1,57 +1,50 @@
-import { Tabs, TabsContent } from "./ui/tabs";
+import { TabsContent } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
-import { FIVE_MINUTES, DEFAULT_TIME, ONE_HOUR } from "@/constants";
 import browser from "webextension-polyfill";
+import { WORK_TIME } from "@/constants";
 
 const PomodoroTimer = () => {
-  const [time, setTime] = useState(DEFAULT_TIME);
+  const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
 
   useEffect(() => {
-    browser.storage.local.get(["time", "isRunning"]).then((result) => {
-      if (result.time) setTime(result.time as number);
-      setIsRunning((result.isRunning as boolean) || false);
-    });
+    const syncState = async () => {
+      const result = await browser.storage.local.get([
+        "time",
+        "isRunning",
+        "isBreak",
+      ]);
+      setTime((result.time as number) ?? 0);
+      setIsRunning((result.isRunning as boolean) ?? false);
+      setIsBreak((result.isBreak as boolean) ?? false);
+    };
+
+    syncState();
+
+    const handleStorageChange = (changes: any) => {
+      if (changes.time) setTime(changes.time.newValue);
+      if (changes.isRunning) setIsRunning(changes.isRunning.newValue);
+      if (changes.isBreak) setIsBreak(changes.isBreak.newValue);
+    };
+
+    browser.storage.onChanged.addListener(handleStorageChange);
+    return () => {
+      browser.storage.onChanged.removeListener(handleStorageChange);
+    };
   }, []);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isRunning && time > 0) {
-      interval = setInterval(() => {
-        setTime((prev) => {
-          if (prev === 0) {
-            clearInterval(interval);
-            stopTimer();
-            return 0;
-          }
-
-          browser.storage.local.set({ time: prev - 1000, isRunning: true });
-          return prev - 1000;
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [isRunning]);
-
-  useEffect(() => {
-    browser.runtime.sendMessage({
-      type: "updateBadge",
-      text: time,
-    });
-  }, [time]);
-
   const startTimer = () => {
-    setIsRunning(true);
-    browser.storage.local.set({ time, isRunning: true });
+    browser.storage.local.set({ isRunning: true, isBreak: false });
   };
 
   const stopTimer = () => {
-    setIsRunning(false);
-    setTime(DEFAULT_TIME);
-    browser.storage.local.set({ time: DEFAULT_TIME, isRunning: false });
+    browser.storage.local.set({
+      isRunning: false,
+      time: WORK_TIME,
+      isBreak: false,
+    });
   };
 
   return (
@@ -59,34 +52,21 @@ const PomodoroTimer = () => {
       value="timer"
       className="flex flex-col items-center justify-center gap-6"
     >
-      <p className="text-5xl font-bold text-primary-custom mt-10">
-        {new Date(time).toISOString().slice(14, 19)}
-      </p>
-
-      <div className="flex flex-wrap justify-center items-center gap-2">
-        <Button
-          size="sm"
-          className="bg-secondary-custom shadow-none text-primary-custom border hover:bg-secondary-custom/50"
-          onClick={() =>
-            setTime((prev) => {
-              if (prev + FIVE_MINUTES >= ONE_HOUR) return ONE_HOUR - 1000;
-              return Math.min(prev + FIVE_MINUTES, ONE_HOUR);
-            })
-          }
-          disabled={time >= ONE_HOUR}
+      <div className="text-center space-y-2">
+        <p
+          className={`${
+            isBreak ? "text-red-500" : "text-primary-custom"
+          } text-5xl font-bold mt-10`}
         >
-          + 5 mins
-        </Button>
-        <Button
-          size="sm"
-          className="bg-secondary-custom shadow-none text-primary-custom border  hover:bg-secondary-custom/50"
-          onClick={() =>
-            setTime((prev) => Math.max(prev - FIVE_MINUTES, FIVE_MINUTES))
-          }
-          disabled={isRunning || time <= FIVE_MINUTES}
+          {time > 0 ? new Date(time).toISOString().slice(14, 19) : "00:00"}
+        </p>
+        <h1
+          className={`${
+            isBreak ? "text-red-500" : "text-primary-custom"
+          } text-xl text-center font-semibold mb-2`}
         >
-          - 5 mins
-        </Button>
+          {isBreak ? "Break" : "Work"} time!
+        </h1>
       </div>
 
       <div className="flex flex-wrap justify-center items-center gap-2">

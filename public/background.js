@@ -1,19 +1,10 @@
-const DEFAULT_TIME = 1000 * 60 * 25;
+const WORK_TIME = 1000 * 60 * 25;
+const BREAK_TIME = 1000 * 60 * 5;
 
 let isRunning = false;
-let time = DEFAULT_TIME;
+let time = WORK_TIME;
 let interval;
-
-chrome.storage.local.get(["time", "isRunning"], (result) => {
-  time = result.time ?? DEFAULT_TIME;
-  isRunning = result.isRunning ?? false;
-
-  if (isRunning && time > 0) {
-    startTimer();
-  } else {
-    updateBadge(time);
-  }
-});
+let isBreak = false;
 
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.isRunning) {
@@ -32,16 +23,9 @@ chrome.storage.onChanged.addListener((changes) => {
       updateBadge(time);
     }
   }
-});
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
-  updateBadge(time);
-});
-
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === "updateBadge") {
-    if (message.text) updateBadge(message.text);
+  if (changes.isBreak) {
+    isBreak = changes.isBreak.newValue;
   }
 });
 
@@ -52,14 +36,14 @@ const startTimer = () => {
     time -= 1000;
 
     if (time <= 0) {
-      time = DEFAULT_TIME;
-      stopTimer();
+      isBreak = !isBreak;
+      time = isBreak ? BREAK_TIME : WORK_TIME;
+      chrome.storage.local.set({ isBreak, time });
 
-      chrome.storage.local.set({ isRunning: false, time });
+      const badgeColor = isBreak ? "#ffccd5" : "#40A662";
+      chrome.action.setBadgeBackgroundColor({ color: badgeColor });
     } else {
-      if (time % 1000 === 0) {
-        updateBadge(time);
-      }
+      chrome.storage.local.set({ time });
     }
 
     updateBadge(time);
@@ -68,7 +52,12 @@ const startTimer = () => {
 
 const stopTimer = () => {
   clearInterval(interval);
-  updateBadge(DEFAULT_TIME);
+  time = WORK_TIME;
+  isRunning = false;
+  isBreak = false;
+  chrome.storage.local.set({ isRunning, time });
+  chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
+  updateBadge(time);
 };
 
 const updateBadge = (time) => {
