@@ -1,11 +1,13 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
 import browser from "webextension-polyfill";
 
 type Todo = {
   id: string;
   title: string;
+  done: boolean;
 };
 
 const Todos = () => {
@@ -14,7 +16,7 @@ const Todos = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Load URLs from storage on mount
+    // Load todos from storage on mount
     browser.storage.local.get("todos").then((result) => {
       if (result.todos) setTodos(result.todos as Todo[]);
     });
@@ -27,17 +29,27 @@ const Todos = () => {
     const newTodo = {
       id: Math.floor(Math.random() * 10_000).toString(),
       title: inputValue,
+      done: false,
     };
-    setTodos([newTodo, ...todos]);
+    const updatedTodos = [newTodo, ...todos];
+    setTodos(updatedTodos);
     setInputValue("");
     setError("");
-    browser.storage.local.set({ todos: [newTodo, ...todos] });
+    browser.storage.local.set({ todos: updatedTodos });
   };
 
   const removeTodo = (id: string) => {
-    const updatedTodo = todos.filter((todo) => todo.id !== id);
-    setTodos(updatedTodo);
-    browser.storage.local.set({ todos: updatedTodo });
+    const updatedTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(updatedTodos);
+    browser.storage.local.set({ todos: updatedTodos });
+  };
+
+  const toggleTodo = (id: string) => {
+    const updatedTodos = todos.map((todo) =>
+      todo.id === id ? { ...todo, done: !todo.done } : todo
+    );
+    setTodos(updatedTodos);
+    browser.storage.local.set({ todos: updatedTodos });
   };
 
   return (
@@ -60,18 +72,30 @@ const Todos = () => {
         </Button>
       </form>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      <ul className="custom-scrollbar max-h-[13rem] overflow-y-auto">
+      <ul className="custom-scrollbar max-h-[20rem] overflow-y-auto">
         {todos.length === 0 && (
           <p className="text-sm font-light text-center mt-4">No todos yet</p>
         )}
-        {todos.map((todo, index) => (
+        {todos.map((todo) => (
           <li
-            key={index + todo.id}
+            key={todo.id}
             className="flex justify-between items-center p-2 mb-2 rounded shadow"
           >
-            <span className="text-xs max-w-[230px] break-all">
-              {todo.title}
-            </span>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`todo-${todo.id}`}
+                checked={todo.done}
+                onCheckedChange={() => toggleTodo(todo.id)}
+              />
+              <label
+                htmlFor={`todo-${todo.id}`}
+                className={`max-w-[200px] break-all ${
+                  todo.done ? "line-through text-gray-500" : ""
+                }`}
+              >
+                {todo.title}
+              </label>
+            </div>
             <button
               onClick={() => removeTodo(todo.id)}
               className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
