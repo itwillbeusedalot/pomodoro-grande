@@ -51,9 +51,8 @@ chrome.storage.local.get(["time", "isRunning", "isBreak"], async (result) => {
   if (isBreak) return removeFocusOverlay();
 
   const currentUrl = window.location.href;
-  const blockedSites = await getBlockedSites();
 
-  if (isRunning && time > 0 && isBlockedSite(currentUrl, blockedSites)) {
+  if (isRunning && time > 0 && (await isBlockedSite(currentUrl))) {
     createFocusOverlay();
   } else {
     removeFocusOverlay();
@@ -77,9 +76,8 @@ chrome.storage.onChanged.addListener(async (changes) => {
   if (isBreak) return removeFocusOverlay();
 
   const currentUrl = window.location.href;
-  const blockedSites = await getBlockedSites();
 
-  if (isRunning && time > 0 && isBlockedSite(currentUrl, blockedSites)) {
+  if (isRunning && time > 0 && (await isBlockedSite(currentUrl))) {
     createFocusOverlay();
   } else {
     removeFocusOverlay();
@@ -87,10 +85,19 @@ chrome.storage.onChanged.addListener(async (changes) => {
 });
 
 const getBlockedSites = async () => {
-  const { urls } = await chrome.storage.local.get("urls");
-  return urls || [];
+  const { blockedSites } = await chrome.storage.local.get("blockedSites");
+  return blockedSites || [];
 };
 
-const isBlockedSite = (url, blockedSites) => {
+const getAllowedUrls = async () => {
+  const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
+  return allowedUrls || [];
+};
+
+const isBlockedSite = async (url) => {
+  const allowedUrls = await getAllowedUrls();
+  if (allowedUrls.some((site) => url.includes(site))) return false;
+
+  const blockedSites = await getBlockedSites();
   return blockedSites.some((site) => url.includes(site));
 };

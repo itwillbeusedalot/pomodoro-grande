@@ -16,12 +16,12 @@ const SESSION_OPTIONS = [1, 2, 3, 4, 5];
 
 const Settings = () => {
   const [time, setTime] = useState(
-    (WORKING_OPTIONS[1] * ONE_MINUTE).toString()
+    (WORKING_OPTIONS[2] * ONE_MINUTE).toString()
   );
   const [breakTime, setBreakTime] = useState(
-    (BREAK_OPTIONS[0] * ONE_MINUTE).toString()
+    (BREAK_OPTIONS[1] * ONE_MINUTE).toString()
   );
-  const [sessions, setSessions] = useState("1");
+  const [sessions, setSessions] = useState("4");
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
@@ -33,11 +33,11 @@ const Settings = () => {
         "isRunning",
       ]);
 
-      setTime((data.time ?? WORKING_OPTIONS[1] * ONE_MINUTE).toString());
+      setTime((data.time ?? WORKING_OPTIONS[2] * ONE_MINUTE).toString());
       setBreakTime(
-        (data.breakTime ?? BREAK_OPTIONS[0] * ONE_MINUTE).toString()
+        (data.breakTime ?? BREAK_OPTIONS[1] * ONE_MINUTE).toString()
       );
-      setSessions((data.sessions as number).toString() ?? "1");
+      setSessions((data.sessions as number).toString() ?? "4");
       setIsRunning((data.isRunning as boolean) ?? false);
     };
 

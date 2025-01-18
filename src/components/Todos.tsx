@@ -69,7 +69,9 @@ const Todos = () => {
             key={index + todo.id}
             className="flex justify-between items-center p-2 mb-2 rounded shadow"
           >
-            <span>{todo.title}</span>
+            <span className="text-xs max-w-[230px] break-all">
+              {todo.title}
+            </span>
             <button
               onClick={() => removeTodo(todo.id)}
               className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"

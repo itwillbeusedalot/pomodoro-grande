@@ -9,8 +9,13 @@ let isBreak = false;
 let sessions = SESSIONS;
 
 const getBlockedSites = async () => {
-  const { urls } = await chrome.storage.local.get("urls");
-  return urls || [];
+  const { blockedSites } = await chrome.storage.local.get("blockedSites");
+  return blockedSites || [];
+};
+
+const getAllowedUrls = async () => {
+  const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
+  return allowedUrls || [];
 };
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -46,7 +51,7 @@ chrome.storage.onChanged.addListener(async (changes) => {
     isBreak = changes.isBreak.newValue;
   }
 
-  if (changes.urls && isRunning) {
+  if ((changes.blockedSites || changes.allowedUrls) && isRunning) {
     blockAllSites();
   }
 
@@ -124,10 +129,23 @@ const createNotification = () => {
 };
 
 const blockAllSites = async () => {
+  let ruleId = 1;
+  const allowedUrls = await getAllowedUrls();
+
+  const allowedRules = allowedUrls.map((site) => ({
+    id: ruleId++,
+    priority: 2,
+    action: { type: "allow" },
+    condition: {
+      urlFilter: site,
+      resourceTypes: ["main_frame"],
+    },
+  }));
+
   const blockedSites = await getBlockedSites();
 
-  const rules = blockedSites.map((site, index) => ({
-    id: index + 1,
+  const blockedRules = blockedSites.map((site) => ({
+    id: ruleId++,
     priority: 1,
     action: { type: "block" },
     condition: {
@@ -135,6 +153,8 @@ const blockAllSites = async () => {
       resourceTypes: ["main_frame"],
     },
   }));
+
+  const rules = [...allowedRules, ...blockedRules];
 
   try {
     const existingRuleIds = await getBlockedSiteIds();

@@ -1,17 +1,16 @@
 import { useState, useEffect, FormEvent } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import browser from "webextension-polyfill";
 
-const SiteBlocker = () => {
+const BlockedSites = () => {
   const [sites, setSites] = useState<string[]>([]);
   const [newSite, setNewSite] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Load URLs from storage on mount
-    browser.storage.local.get("urls").then((result) => {
-      if (result.urls) setSites(result.urls as string[]);
+    browser.storage.local.get("blockedSites").then((result) => {
+      if (result.blockedSites) setSites(result.blockedSites as string[]);
     });
   }, []);
 
@@ -31,7 +30,7 @@ const SiteBlocker = () => {
       setSites([domain, ...sites]);
       setNewSite("");
       setError("");
-      browser.storage.local.set({ urls: [...sites, domain] });
+      browser.storage.local.set({ blockedSites: [...sites, domain] });
     } else if (sites.includes(domain)) {
       setError("This domain is already in the list.");
     }
@@ -40,7 +39,7 @@ const SiteBlocker = () => {
   const removeSite = (siteToRemove: string) => {
     const updatedSites = sites.filter((site) => site !== siteToRemove);
     setSites(updatedSites);
-    browser.storage.local.set({ urls: updatedSites });
+    browser.storage.local.set({ blockedSites: updatedSites });
   };
 
   return (
@@ -65,7 +64,8 @@ const SiteBlocker = () => {
         </Button>
       </form>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      <ul className="custom-scrollbar max-h-[13rem] overflow-y-auto">
+
+      <ul className="custom-scrollbar max-h-[17rem] overflow-y-auto">
         {sites.length === 0 && (
           <p className="text-sm font-light text-center mt-4">
             No sites blocked yet
@@ -90,4 +90,4 @@ const SiteBlocker = () => {
   );
 };
 
-export default SiteBlocker;
+export default BlockedSites;
