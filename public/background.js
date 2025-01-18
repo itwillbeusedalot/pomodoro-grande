@@ -23,6 +23,16 @@ chrome.runtime.onInstalled.addListener(() => {
   updateBadge(time);
 });
 
+chrome.storage.local.get(
+  ["time", "isRunning", "breakTime", "sessions"],
+  async (result) => {
+    time = result.time ?? WORK_TIME;
+    BREAK_TIME = result.breakTime ?? BREAK_TIME;
+    isRunning = result.isRunning ?? false;
+    sessions = result.sessions ?? SESSIONS;
+  }
+);
+
 chrome.storage.onChanged.addListener(async (changes) => {
   if (changes.isRunning) {
     isRunning = changes.isRunning.newValue;
@@ -70,6 +80,11 @@ const startTimer = () => {
 
   interval = setInterval(() => {
     if (sessions === 0) {
+      createNotification({
+        title: "All sessions completed! Time to take a long break!",
+        message:
+          "You can start another session by clicking on the extension icon.",
+      });
       return stopTimer();
     }
 
@@ -83,7 +98,10 @@ const startTimer = () => {
 
       const badgeColor = isBreak ? "#ffccd5" : "#40A662";
       chrome.action.setBadgeBackgroundColor({ color: badgeColor });
-      createNotification();
+      createNotification({
+        title: isBreak ? "Break Time!" : "Work Time!",
+        message: `Time left: ${new Date(time).toISOString().slice(14, 19)}`,
+      });
 
       if (isBreak) {
         unBlockAllSites();
@@ -115,12 +133,12 @@ const updateBadge = (time) => {
   chrome.action.setBadgeText({ text: formattedTime });
 };
 
-const createNotification = () => {
+const createNotification = ({ title, message }) => {
   chrome.notifications.create("reset-notif", {
     type: "basic",
     iconUrl: "https://www.pngfind.com/images/lazy-bg.png",
-    title: isBreak ? "Break Time!" : "Work Time!",
-    message: `Time left: ${new Date(time).toISOString().slice(14, 19)}`,
+    title,
+    message,
   });
 
   setTimeout(() => {
