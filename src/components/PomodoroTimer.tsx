@@ -63,7 +63,9 @@ const PomodoroTimer = () => {
             isBreak ? "text-red-500" : "text-primary-custom"
           } text-xl text-center font-semibold mb-2`}
         >
-          {isBreak ? "Break" : "Work"} time!
+          {!isRunning && !isBreak && "Click start to begin"}
+          {isRunning && !isBreak && "Focus on your task"}
+          {isRunning && isBreak && "Take a break"}
         </h1>
       </div>
 

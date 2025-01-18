@@ -1,28 +1,37 @@
-import { Globe, Settings, Timer } from "lucide-react";
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Globe, ListTodo, Settings, Timer } from "lucide-react";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const NAV_ITEMS = [
+  {
+    value: "timer",
+    icon: Timer,
+  },
+  {
+    value: "todos",
+    icon: ListTodo,
+  },
+  {
+    value: "sites",
+    icon: Globe,
+  },
+  {
+    value: "settings",
+    icon: Settings,
+  },
+];
 
 const Navbar = () => {
   return (
     <TabsList className="text-primary-custom border-t bg-secondary-custom/5 w-full gap-4 px-4 py-6 rounded-none">
-      <TabsTrigger
-        value="timer"
-        className=" data-[state=active]:bg-primary-custom data-[state=active]:text-white"
-      >
-        <Timer />
-      </TabsTrigger>
-      <TabsTrigger
-        value="sites"
-        className=" data-[state=active]:bg-primary-custom data-[state=active]:text-white"
-      >
-        <Globe />
-      </TabsTrigger>
-      <TabsTrigger
-        value="settings"
-        className=" data-[state=active]:bg-primary-custom data-[state=active]:text-white"
-      >
-        <Settings />
-      </TabsTrigger>
+      {NAV_ITEMS.map(({ value, icon: Icon }) => (
+        <TabsTrigger
+          key={value}
+          value={value}
+          className="data-[state=active]:bg-primary-custom data-[state=active]:text-white"
+        >
+          <Icon />
+        </TabsTrigger>
+      ))}
     </TabsList>
   );
 };

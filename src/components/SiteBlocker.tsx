@@ -22,15 +22,13 @@ const SiteBlocker = () => {
     const match = newSite.match(urlRegex);
 
     if (!match) {
-      setError(
-        "Invalid domain or URL. Please enter a valid site (e.g., example.com or https://example.com)."
-      );
+      setError("Invalid domain or URL.");
       return;
     }
 
     const domain = match[2]; // Extract the valid domain
     if (domain && !sites.includes(domain)) {
-      setSites([...sites, domain]);
+      setSites([domain, ...sites]);
       setNewSite("");
       setError("");
       browser.storage.local.set({ urls: [...sites, domain] });
@@ -47,25 +45,32 @@ const SiteBlocker = () => {
 
   return (
     <div className="w-full space-y-2">
-      <h1 className="text-lg text-center font-semibold mb-2">
+      <h1 className="text-base text-center font-semibold mb-2">
         Blocked Domains
       </h1>
       <form onSubmit={addSite} className="flex items-center gap-1">
         <Input
           value={newSite}
           onChange={(e) => setNewSite(e.target.value)}
-          placeholder="Enter site or domain"
+          placeholder="example.com"
+          className="h-8 text-sm placeholder:text-xs"
         />
 
         <Button
           type="submit"
           className="bg-primary-custom hover:bg-primary-custom/90"
+          size="sm"
         >
           Add
         </Button>
       </form>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      <ul className="custom-scrollbar max-h-[10rem] overflow-y-auto">
+      <ul className="custom-scrollbar max-h-[13rem] overflow-y-auto">
+        {sites.length === 0 && (
+          <p className="text-sm font-light text-center mt-4">
+            No sites blocked yet
+          </p>
+        )}
         {sites.map((site, index) => (
           <li
             key={index}
