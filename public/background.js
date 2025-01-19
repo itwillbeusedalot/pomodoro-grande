@@ -129,8 +129,8 @@ const startTimer = () => {
       const badgeColor = isBreak ? "#ffccd5" : "#40A662";
       chrome.action.setBadgeBackgroundColor({ color: badgeColor });
       createNotification({
-        title: isBreak ? "Break Time!" : "Work Time!",
-        message: `Time left: ${new Date(time).toISOString().slice(14, 19)}`,
+        title: isBreak ? "Break Time! ☀️" : "Work Time! ⏰",
+        message: isBreak ? "Take a break and recharge." : "Let's get to work!",
       });
 
       if (isBreak) {
@@ -256,7 +256,7 @@ function playSound() {
       action: "playSound",
       isSoundEnabled,
       selectedSound,
-      soundVolume: 1,
+      soundVolume,
     });
   });
 }

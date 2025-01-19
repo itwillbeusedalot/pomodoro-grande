@@ -1,5 +1,4 @@
-"use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -8,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import debounce from "@/lib/debounce";
 import browser from "webextension-polyfill";
 
 const sounds = [
@@ -17,7 +17,7 @@ const sounds = [
 
 const SoundSettings = () => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const [selectedSound, setSelectedSound] = useState("clock");
+  const [selectedSound, setSelectedSound] = useState("clock.mp3");
   const [soundVolume, setSoundVolume] = useState(0.5);
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
 
@@ -49,20 +49,43 @@ const SoundSettings = () => {
     setIsSoundPlaying(true);
   };
 
+  const handleStop = () => {
+    setIsSoundPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
+
+  const debouncedSave = useCallback(
+    debounce((value: number) => {
+      browser.storage.local.set({ soundVolume: value });
+    }, 500),
+    []
+  );
+
+  const handleVolumeChange = (value: number) => {
+    setSoundVolume(value);
+    if (audioRef.current) {
+      audioRef.current.volume = value;
+    }
+
+    debouncedSave(value);
+  };
+
   useEffect(() => {
     browser.storage.local
       .get(["selectedSound", "isSoundEnabled", "soundVolume"])
       .then((data) => {
-        setSelectedSound((data?.selectedSound as string) ?? "clock");
+        setSelectedSound((data?.selectedSound as string) ?? "clock.mp3");
         setIsSoundEnabled((data?.isSoundEnabled as boolean) ?? true);
-        setSoundVolume((data?.soundVolume as number) ?? 1);
+        setSoundVolume((data?.soundVolume as number) ?? 0.5);
       });
   }, []);
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+      handleStop();
     }
 
     if (isSoundEnabled && isSoundPlaying) {
@@ -70,10 +93,7 @@ const SoundSettings = () => {
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      if (audioRef.current) handleStop();
     };
   }, [selectedSound, soundVolume, isSoundPlaying]);
 
@@ -108,6 +128,22 @@ const SoundSettings = () => {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="flex items-center justify-between mt-4">
+        <p>Volume</p>
+        <div className="flex items-center gap-2">
+          <input
+            value={soundVolume}
+            onChange={(e) => handleVolumeChange(Number(e.target.value))}
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            className="accent-primary-custom"
+          />
+          <p className="text-xs w-5">{soundVolume * 100}</p>
+        </div>
       </div>
     </div>
   );
