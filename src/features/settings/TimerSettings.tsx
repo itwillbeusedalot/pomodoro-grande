@@ -1,5 +1,4 @@
 import { ONE_MINUTE } from "@/constants";
-import { Switch } from "./ui/switch";
 import {
   Select,
   SelectContent,
@@ -14,7 +13,7 @@ const WORKING_OPTIONS = [1, 15, 25, 35, 45];
 const BREAK_OPTIONS = [1, 5, 10, 15, 20];
 const SESSION_OPTIONS = [1, 2, 3, 4, 5];
 
-const Settings = () => {
+const TimerSettings = () => {
   const [time, setTime] = useState(
     (WORKING_OPTIONS[2] * ONE_MINUTE).toString()
   );
@@ -60,14 +59,10 @@ const Settings = () => {
   };
 
   return (
-    <div className="w-full space-y-4 text-center">
-      <h1 className="text-lg text-center font-semibold mb-2">Settings</h1>
-
-      {/* <div className="flex items-center justify-between">
-        <p>Notifications</p>
-
-        <Switch className={`data-[state=checked]:bg-primary-custom`} />
-      </div> */}
+    <div className="w-full space-y-2">
+      <h1 className="text-base text-center font-semibold mb-2">
+        Timer Settings
+      </h1>
 
       <div className="flex items-center justify-between">
         <p>Work time</p>
@@ -78,7 +73,7 @@ const Settings = () => {
           onValueChange={handleWorkTimeChange}
           defaultValue={time}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
@@ -100,7 +95,7 @@ const Settings = () => {
           onValueChange={handleBreakTimeChange}
           defaultValue={breakTime}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
@@ -122,7 +117,7 @@ const Settings = () => {
           onValueChange={handleSessionsChange}
           defaultValue={sessions}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
@@ -138,4 +133,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default TimerSettings;

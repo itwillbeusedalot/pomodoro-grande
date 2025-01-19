@@ -1,5 +1,5 @@
-import { TabsContent } from "./ui/tabs";
-import { Button } from "./ui/button";
+import { TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 

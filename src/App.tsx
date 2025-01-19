@@ -1,11 +1,11 @@
 import Header from "./components/common/Header";
 import Navbar from "./components/common/Navbar";
-import Settings from "./components/Settings";
-import SiteBlocker from "./components/Site Blocker/SiteBlocker";
+import Settings from "./features/settings/Settings";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import PomodoroTimer from "./components/PomodoroTimer";
+import PomodoroTimer from "./features/pomodoro/PomodoroTimer";
 import { useState } from "react";
-import Todos from "./components/Todos";
+import Todos from "./features/todos";
+import SiteBlocker from "./features/site-blocker/SiteBlocker";
 
 const DEFAULT_TAB_SIZE = {
   width: "w-80",
@@ -16,18 +16,13 @@ const App = () => {
   const [tabSize, setTabSize] = useState(DEFAULT_TAB_SIZE);
 
   const handleTabResize = (value: string) => {
-    if (value === "settings") {
-      setTabSize({
-        width: "w-[500px]",
-        height: "h-[500px]",
-      });
-    } else if (value === "sites" || value === "todos") {
+    if (value === "timer") {
+      setTabSize(DEFAULT_TAB_SIZE);
+    } else {
       setTabSize({
         width: DEFAULT_TAB_SIZE.width,
         height: "h-[500px]",
       });
-    } else {
-      setTabSize(DEFAULT_TAB_SIZE);
     }
   };
 
