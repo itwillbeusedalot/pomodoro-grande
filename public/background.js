@@ -7,6 +7,9 @@ let time = WORK_TIME;
 let interval;
 let isBreak = false;
 let sessions = SESSIONS;
+let selectedSound = "./sounds/rickroll.mp3";
+let isSoundEnabled = true;
+let soundVolume = 0.5;
 
 const getBlockedSites = async () => {
   const { blockedSites } = await chrome.storage.local.get("blockedSites");
@@ -24,12 +27,23 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.storage.local.get(
-  ["time", "isRunning", "breakTime", "sessions"],
+  [
+    "time",
+    "isRunning",
+    "breakTime",
+    "sessions",
+    "selectedSound",
+    "isSoundEnabled",
+    "soundVolume",
+  ],
   async (result) => {
     time = result.time ?? WORK_TIME;
     BREAK_TIME = result.breakTime ?? BREAK_TIME;
     isRunning = result.isRunning ?? false;
     sessions = result.sessions ?? SESSIONS;
+    selectedSound = result.selectedSound ?? selectedSound;
+    isSoundEnabled = result.isSoundEnabled ?? isSoundEnabled;
+    soundVolume = result.soundVolume ?? soundVolume;
   }
 );
 
@@ -72,6 +86,18 @@ chrome.storage.onChanged.addListener(async (changes) => {
       SESSIONS = changes.sessions.newValue;
     }
   }
+
+  if (changes.selectedSound) {
+    selectedSound = changes.selectedSound.newValue;
+  }
+
+  if (changes.isSoundEnabled) {
+    isSoundEnabled = changes.isSoundEnabled.newValue;
+  }
+
+  if (changes.soundVolume) {
+    soundVolume = changes.soundVolume.newValue;
+  }
 });
 
 const startTimer = () => {
@@ -91,6 +117,10 @@ const startTimer = () => {
     time -= 1000;
 
     if (time <= 0) {
+      if (selectedSound && isSoundEnabled) {
+        playSound();
+      }
+
       isBreak = !isBreak;
       time = isBreak ? BREAK_TIME : WORK_TIME;
       sessions = isBreak ? sessions : sessions - 1;
@@ -201,3 +231,32 @@ const getBlockedSiteIds = async () => {
     return [];
   }
 };
+
+function ensureOffscreenDocument(callback) {
+  chrome.offscreen.hasDocument().then((hasDocument) => {
+    if (!hasDocument) {
+      chrome.offscreen
+        .createDocument({
+          url: chrome.runtime.getURL("offscreen.html"),
+          reasons: ["AUDIO_PLAYBACK"],
+          justification: "Play notification sounds for timers",
+        })
+        .then(() => {
+          if (callback) callback(); // Ensure the document is created before sending the message
+        });
+    } else {
+      if (callback) callback();
+    }
+  });
+}
+
+function playSound() {
+  ensureOffscreenDocument(() => {
+    chrome.runtime.sendMessage({
+      action: "playSound",
+      isSoundEnabled,
+      selectedSound,
+      soundVolume: 1,
+    });
+  });
+}

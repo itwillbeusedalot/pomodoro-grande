@@ -4,7 +4,7 @@ import Settings from "./features/settings/Settings";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import PomodoroTimer from "./features/pomodoro/PomodoroTimer";
 import { useState } from "react";
-import Todos from "./features/todos";
+import Todos from "./features/todos/Todos";
 import SiteBlocker from "./features/site-blocker/SiteBlocker";
 
 const DEFAULT_TAB_SIZE = {
