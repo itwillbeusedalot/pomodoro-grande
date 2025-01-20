@@ -98,8 +98,8 @@ const createFocusOverlay = () => {
   });
 
   overlay.innerHTML = `
-    <h1 style="margin-bottom: 20px;">Stay Focused!</h1>
-    <p style="font-size: 24px;">Time remaining: ${new Date(time)
+    <h1 style="margin-bottom: 20px; font-size: 48px; text-align: center">Almost there! Keep up the good work!</h1>
+    <p style="font-size: 20px;">Time remaining: ${new Date(time)
       .toISOString()
       .slice(14, 19)}</p>
   `;

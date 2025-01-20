@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener((request) => {
     request?.isSoundEnabled
   ) {
     const audio = new Audio(
-      chrome.runtime.getURL(`./sounds/${request.selectedSound}`)
+      chrome.runtime.getURL(`./assets/sounds/${request.selectedSound}`)
     );
     audio.volume = request?.soundVolume;
 

@@ -24,7 +24,7 @@
   "host_permissions": ["<all_urls>"],
   "web_accessible_resources": [
     {
-      "resources": ["./sounds/*.mp3", "offscreen.html"],
+      "resources": ["./assets/sounds/*.mp3", "offscreen.html"],
       "matches": ["<all_urls>"]
     }
   ]

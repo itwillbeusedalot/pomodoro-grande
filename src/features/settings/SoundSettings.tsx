@@ -11,8 +11,12 @@ import debounce from "@/lib/debounce";
 import browser from "webextension-polyfill";
 
 const sounds = [
-  { value: "clock.mp3", label: "Clock" },
+  { value: "clock.mp3", label: "Alarm" },
+  { value: "clock2.mp3", label: "Alarm 2" },
+  { value: "clock3.mp3", label: "Alarm 3" },
   { value: "iphone.mp3", label: "Iphone" },
+  { value: "radar.mp3", label: "Radar" },
+  { value: "butterfly.mp3", label: "Butterfly" },
 ];
 
 const SoundSettings = () => {
@@ -41,7 +45,7 @@ const SoundSettings = () => {
 
   const handlePlay = () => {
     setIsSoundPlaying(false);
-    const sound = new Audio(`./sounds/${selectedSound}`);
+    const sound = new Audio(`./assets/sounds/${selectedSound}`);
     sound.volume = soundVolume;
     sound.play();
 
