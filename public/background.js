@@ -1,51 +1,35 @@
 let WORK_TIME = 1000 * 60 * 25;
 let BREAK_TIME = 1000 * 60 * 5;
 let SESSIONS = 4;
+let BLOCKED_SITES = [
+  "facebook.com",
+  "twitter.com",
+  "instagram.com",
+  "x.com",
+  "youtube.com",
+];
 
 let isRunning = false;
 let time = WORK_TIME;
 let interval;
 let isBreak = false;
 let sessions = SESSIONS;
-let selectedSound = "./sounds/rickroll.mp3";
+let selectedSound = "clock.mp3";
 let isSoundEnabled = true;
 let soundVolume = 0.5;
 
-const getBlockedSites = async () => {
-  const { blockedSites } = await chrome.storage.local.get("blockedSites");
-  return blockedSites || [];
-};
-
-const getAllowedUrls = async () => {
-  const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
-  return allowedUrls || [];
-};
+//*************************EVENT LISTENERS************************* */
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
+  chrome.storage.local.set({
+    time,
+    breakTime: BREAK_TIME,
+    sessions,
+    blockedSites: BLOCKED_SITES,
+  });
 });
-
-chrome.storage.local.get(
-  [
-    "time",
-    "isRunning",
-    "breakTime",
-    "sessions",
-    "selectedSound",
-    "isSoundEnabled",
-    "soundVolume",
-  ],
-  async (result) => {
-    time = result.time ?? WORK_TIME;
-    BREAK_TIME = result.breakTime ?? BREAK_TIME;
-    isRunning = result.isRunning ?? false;
-    sessions = result.sessions ?? SESSIONS;
-    selectedSound = result.selectedSound ?? selectedSound;
-    isSoundEnabled = result.isSoundEnabled ?? isSoundEnabled;
-    soundVolume = result.soundVolume ?? soundVolume;
-  }
-);
 
 chrome.storage.onChanged.addListener(async (changes) => {
   if (changes.isRunning) {
@@ -60,7 +44,7 @@ chrome.storage.onChanged.addListener(async (changes) => {
 
   if (changes.time) {
     time = changes.time.newValue;
-
+    // Store the initial value of WORK_TIME to reset the value of "time" when all sessions are completed
     if (!isRunning) {
       WORK_TIME = changes.time.newValue;
       updateBadge(WORK_TIME);
@@ -81,7 +65,7 @@ chrome.storage.onChanged.addListener(async (changes) => {
 
   if (changes.sessions) {
     sessions = changes.sessions.newValue;
-
+    // Store the initial value of sessions to reset the value when all sessions are completed
     if (!isRunning) {
       SESSIONS = changes.sessions.newValue;
     }
@@ -100,44 +84,22 @@ chrome.storage.onChanged.addListener(async (changes) => {
   }
 });
 
+//*****************TIMER******************** */
+
 const startTimer = () => {
   clearInterval(interval);
   blockAllSites();
 
   interval = setInterval(() => {
     if (sessions === 0) {
-      createNotification({
-        title: "All sessions completed! Time to take a long break!",
-        message:
-          "You can start another session by clicking on the extension icon.",
-      });
-      return stopTimer();
+      handleAllSessionsCompleted();
+      return;
     }
 
     time -= 1000;
 
     if (time <= 0) {
-      if (selectedSound && isSoundEnabled) {
-        playSound();
-      }
-
-      isBreak = !isBreak;
-      time = isBreak ? BREAK_TIME : WORK_TIME;
-      sessions = isBreak ? sessions : sessions - 1;
-      chrome.storage.local.set({ isBreak, time, sessions });
-
-      const badgeColor = isBreak ? "#ffccd5" : "#40A662";
-      chrome.action.setBadgeBackgroundColor({ color: badgeColor });
-      createNotification({
-        title: isBreak ? "Break Time! ☀️" : "Work Time! ⏰",
-        message: isBreak ? "Take a break and recharge." : "Let's get to work!",
-      });
-
-      if (isBreak) {
-        unBlockAllSites();
-      } else {
-        blockAllSites();
-      }
+      handleTimeEnds();
     } else {
       chrome.storage.local.set({ time });
     }
@@ -146,7 +108,7 @@ const startTimer = () => {
   }, 1000);
 };
 
-const stopTimer = async () => {
+const stopTimer = () => {
   clearInterval(interval);
   time = WORK_TIME;
   isRunning = false;
@@ -156,6 +118,40 @@ const stopTimer = async () => {
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
   unBlockAllSites();
+};
+
+const handleTimeEnds = () => {
+  if (selectedSound && isSoundEnabled) {
+    playSound();
+  }
+
+  isBreak = !isBreak;
+  time = isBreak ? BREAK_TIME : WORK_TIME;
+  sessions = isBreak ? sessions : sessions - 1;
+  chrome.storage.local.set({ isBreak, time, sessions });
+
+  const badgeColor = isBreak ? "#ffccd5" : "#40A662";
+  chrome.action.setBadgeBackgroundColor({ color: badgeColor });
+
+  createNotification({
+    title: isBreak ? "Break Time! ☀️" : "Work Time! ⏰",
+    message: isBreak ? "Take a break and recharge." : "Let's get to work!",
+  });
+
+  if (isBreak) {
+    unBlockAllSites();
+  } else {
+    blockAllSites();
+  }
+};
+
+const handleAllSessionsCompleted = () => {
+  createNotification({
+    title: "All sessions completed! Time to take a long break!",
+    message: "You can start another session by clicking on the extension icon.",
+  });
+
+  return stopTimer();
 };
 
 const updateBadge = (time) => {
@@ -175,6 +171,8 @@ const createNotification = ({ title, message }) => {
     chrome.notifications.clear("reset-notif");
   }, 5000);
 };
+
+//*****************BLOCKING SITES******************** */
 
 const blockAllSites = async () => {
   let ruleId = 1;
@@ -232,6 +230,17 @@ const getBlockedSiteIds = async () => {
   }
 };
 
+const getBlockedSites = async () => {
+  const { blockedSites } = await chrome.storage.local.get("blockedSites");
+  return blockedSites || BLOCKED_SITES;
+};
+
+const getAllowedUrls = async () => {
+  const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
+  return allowedUrls || [];
+};
+
+//*****************SOUND******************** */
 function ensureOffscreenDocument(callback) {
   chrome.offscreen.hasDocument().then((hasDocument) => {
     if (!hasDocument) {

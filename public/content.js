@@ -2,6 +2,52 @@ let isRunning = false;
 let time = 0;
 let isBreak = false;
 
+// Listen for changes to storage
+chrome.storage.onChanged.addListener(async (changes) => {
+  if (changes.isRunning) {
+    isRunning = changes.isRunning.newValue;
+  }
+
+  if (changes.time) {
+    time = changes.time.newValue;
+  }
+
+  if (changes.isBreak) {
+    isBreak = changes.isBreak.newValue;
+    if (isBreak) return removeFocusOverlay();
+  }
+
+  const currentUrl = window.location.href;
+
+  if (isRunning && time > 0 && (await isBlockedSite(currentUrl))) {
+    createFocusOverlay();
+  } else {
+    removeFocusOverlay();
+  }
+});
+
+//*****************BLOCKING******************** */
+
+const getBlockedSites = async () => {
+  const { blockedSites } = await chrome.storage.local.get("blockedSites");
+  return blockedSites || [];
+};
+
+const getAllowedUrls = async () => {
+  const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
+  return allowedUrls || [];
+};
+
+const isBlockedSite = async (url) => {
+  const allowedUrls = await getAllowedUrls();
+  if (allowedUrls.some((site) => url.includes(site))) return false;
+
+  const blockedSites = await getBlockedSites();
+  return blockedSites.some((site) => url.includes(site));
+};
+
+//*****************OVERLAY******************** */
+
 const createFocusOverlay = () => {
   let overlay = document.getElementById("focus-overlay");
 
@@ -40,64 +86,4 @@ const removeFocusOverlay = () => {
     overlay.remove();
     document.body.style.overflow = "auto";
   }
-};
-
-// Initialize state from storage
-chrome.storage.local.get(["time", "isRunning", "isBreak"], async (result) => {
-  time = result.time ?? 0;
-  isRunning = result.isRunning ?? false;
-  isBreak = result.isBreak ?? false;
-
-  if (isBreak) return removeFocusOverlay();
-
-  const currentUrl = window.location.href;
-
-  if (isRunning && time > 0 && (await isBlockedSite(currentUrl))) {
-    createFocusOverlay();
-  } else {
-    removeFocusOverlay();
-  }
-});
-
-// Listen for changes to storage
-chrome.storage.onChanged.addListener(async (changes) => {
-  if (changes.isRunning) {
-    isRunning = changes.isRunning.newValue;
-  }
-
-  if (changes.time) {
-    time = changes.time.newValue;
-  }
-
-  if (changes.isBreak) {
-    isBreak = changes.isBreak.newValue;
-  }
-
-  if (isBreak) return removeFocusOverlay();
-
-  const currentUrl = window.location.href;
-
-  if (isRunning && time > 0 && (await isBlockedSite(currentUrl))) {
-    createFocusOverlay();
-  } else {
-    removeFocusOverlay();
-  }
-});
-
-const getBlockedSites = async () => {
-  const { blockedSites } = await chrome.storage.local.get("blockedSites");
-  return blockedSites || [];
-};
-
-const getAllowedUrls = async () => {
-  const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
-  return allowedUrls || [];
-};
-
-const isBlockedSite = async (url) => {
-  const allowedUrls = await getAllowedUrls();
-  if (allowedUrls.some((site) => url.includes(site))) return false;
-
-  const blockedSites = await getBlockedSites();
-  return blockedSites.some((site) => url.includes(site));
 };

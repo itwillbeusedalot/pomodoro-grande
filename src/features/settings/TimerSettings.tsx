@@ -9,18 +9,19 @@ import {
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 
-const WORKING_OPTIONS = [1, 15, 25, 35, 45];
-const BREAK_OPTIONS = [1, 5, 10, 15, 20];
-const SESSION_OPTIONS = [1, 2, 3, 4, 5];
+const WORKING_OPTIONS = [1, 15, 25, 35, 45].map((option) =>
+  (option * ONE_MINUTE).toString()
+);
+
+const BREAK_OPTIONS = [1, 5, 10, 15, 20].map((option) =>
+  (option * ONE_MINUTE).toString()
+);
+const SESSION_OPTIONS = [1, 2, 3, 4, 5].map((option) => option.toString());
 
 const TimerSettings = () => {
-  const [time, setTime] = useState(
-    (WORKING_OPTIONS[2] * ONE_MINUTE).toString()
-  );
-  const [breakTime, setBreakTime] = useState(
-    (BREAK_OPTIONS[1] * ONE_MINUTE).toString()
-  );
-  const [sessions, setSessions] = useState("4");
+  const [time, setTime] = useState(WORKING_OPTIONS[2]);
+  const [breakTime, setBreakTime] = useState(BREAK_OPTIONS[1]);
+  const [sessions, setSessions] = useState(SESSION_OPTIONS[4]);
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
@@ -32,11 +33,9 @@ const TimerSettings = () => {
         "isRunning",
       ]);
 
-      setTime((data.time ?? WORKING_OPTIONS[2] * ONE_MINUTE).toString());
-      setBreakTime(
-        (data.breakTime ?? BREAK_OPTIONS[1] * ONE_MINUTE).toString()
-      );
-      setSessions((data.sessions as number).toString() ?? "4");
+      setTime(data?.time?.toString() ?? WORKING_OPTIONS[2]);
+      setBreakTime(data?.breakTime?.toString() ?? BREAK_OPTIONS[1]);
+      setSessions(data?.sessions?.toString() ?? SESSION_OPTIONS[4]);
       setIsRunning((data.isRunning as boolean) ?? false);
     };
 
@@ -78,8 +77,8 @@ const TimerSettings = () => {
           </SelectTrigger>
           <SelectContent>
             {WORKING_OPTIONS.map((option) => (
-              <SelectItem key={option} value={(ONE_MINUTE * option).toString()}>
-                {option} minutes
+              <SelectItem key={option} value={option}>
+                {Number(option) / ONE_MINUTE} minutes
               </SelectItem>
             ))}
           </SelectContent>
@@ -100,8 +99,8 @@ const TimerSettings = () => {
           </SelectTrigger>
           <SelectContent>
             {BREAK_OPTIONS.map((option) => (
-              <SelectItem key={option} value={(ONE_MINUTE * option).toString()}>
-                {option} minutes
+              <SelectItem key={option} value={option}>
+                {Number(option) / ONE_MINUTE} minutes
               </SelectItem>
             ))}
           </SelectContent>
@@ -122,7 +121,7 @@ const TimerSettings = () => {
           </SelectTrigger>
           <SelectContent>
             {SESSION_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option.toString()}>
+              <SelectItem key={option} value={option}>
                 {option}
               </SelectItem>
             ))}
