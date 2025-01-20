@@ -4,13 +4,9 @@
   "version": "1.0",
   "description": "A productivity extension that blocks distracting websites and helps users stay focused with a timer.",
   "permissions": [
-    "activeTab",
     "storage",
-    "webRequest",
-    "tabs",
     "notifications",
     "declarativeNetRequest",
-    "declarativeNetRequestFeedback",
     "offscreen"
   ],
   "background": {
