@@ -2,6 +2,23 @@ let isRunning = false;
 let time = 0;
 let isBreak = false;
 
+// Initialize state from storage
+chrome.storage.local.get(["time", "isRunning", "isBreak"], async (result) => {
+  time = result.time ?? 0;
+  isRunning = result.isRunning ?? false;
+  isBreak = result.isBreak ?? false;
+
+  if (isBreak) return removeFocusOverlay();
+
+  const currentUrl = window.location.href;
+
+  if (isRunning && !isBreak && (await isBlockedSite(currentUrl))) {
+    createFocusOverlay();
+  } else {
+    removeFocusOverlay();
+  }
+});
+
 // Listen for changes to storage
 chrome.storage.onChanged.addListener(async (changes) => {
   if (changes.isRunning) {
@@ -19,7 +36,7 @@ chrome.storage.onChanged.addListener(async (changes) => {
 
   const currentUrl = window.location.href;
 
-  if (isRunning && time > 0 && (await isBlockedSite(currentUrl))) {
+  if (isRunning && !isBreak && (await isBlockedSite(currentUrl))) {
     createFocusOverlay();
   } else {
     removeFocusOverlay();
@@ -68,9 +85,17 @@ const createFocusOverlay = () => {
     overlay.style.zIndex = "9999";
     overlay.style.fontFamily = "Arial, sans-serif";
     overlay.style.backdropFilter = "blur(4px)";
+    overlay.style.pointerEvents = "all";
     document.body.appendChild(overlay);
     document.body.style.overflow = "hidden";
   }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
 
   overlay.innerHTML = `
     <h1 style="margin-bottom: 20px;">Stay Focused!</h1>
@@ -85,5 +110,8 @@ const removeFocusOverlay = () => {
   if (overlay) {
     overlay.remove();
     document.body.style.overflow = "auto";
+    window.removeEventListener("keydown", () => {
+      return;
+    });
   }
 };

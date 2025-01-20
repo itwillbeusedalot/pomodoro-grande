@@ -12,7 +12,7 @@ import browser from "webextension-polyfill";
 
 const sounds = [
   { value: "clock.mp3", label: "Clock" },
-  { value: "rickroll.mp3", label: "Rick Roll" },
+  { value: "iphone.mp3", label: "Iphone" },
 ];
 
 const SoundSettings = () => {

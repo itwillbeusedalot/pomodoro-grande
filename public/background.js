@@ -7,6 +7,9 @@ let BLOCKED_SITES = [
   "instagram.com",
   "x.com",
   "youtube.com",
+  "reddit.com",
+  "netflix.com",
+  "tiktok.com",
 ];
 
 let isRunning = false;
@@ -17,6 +20,27 @@ let sessions = SESSIONS;
 let selectedSound = "clock.mp3";
 let isSoundEnabled = true;
 let soundVolume = 0.5;
+
+chrome.storage.local.get(
+  [
+    "time",
+    "isRunning",
+    "breakTime",
+    "sessions",
+    "selectedSound",
+    "isSoundEnabled",
+    "soundVolume",
+  ],
+  (result) => {
+    time = result.time ?? WORK_TIME;
+    BREAK_TIME = result.breakTime ?? BREAK_TIME;
+    isRunning = result.isRunning ?? false;
+    sessions = result.sessions ?? SESSIONS;
+    selectedSound = result.selectedSound ?? selectedSound;
+    isSoundEnabled = result.isSoundEnabled ?? isSoundEnabled;
+    soundVolume = result.soundVolume ?? soundVolume;
+  }
+);
 
 //*************************EVENT LISTENERS************************* */
 
