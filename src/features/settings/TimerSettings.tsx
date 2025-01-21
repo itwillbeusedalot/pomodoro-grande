@@ -30,13 +30,13 @@ const TimerSettings = () => {
   useEffect(() => {
     const loadSettings = async () => {
       const data = await browser.storage.local.get([
-        "time",
         "breakTime",
         "isRunning",
         "longBreak",
+        "workTime",
       ]);
 
-      setTime(data?.time?.toString() ?? WORKING_OPTIONS[2]);
+      setTime(data?.workTime?.toString() ?? WORKING_OPTIONS[2]);
       setBreakTime(data?.breakTime?.toString() ?? BREAK_OPTIONS[1]);
       setIsRunning((data.isRunning as boolean) ?? false);
       setLongBreak(data?.longBreak?.toString() ?? LONG_BREAK_OPTIONS[1]);
@@ -47,7 +47,10 @@ const TimerSettings = () => {
 
   const handleWorkTimeChange = (value: string) => {
     setTime(value);
-    browser.storage.local.set({ time: parseInt(value) });
+    browser.storage.local.set({
+      time: parseInt(value),
+      workTime: parseInt(value),
+    });
   };
 
   const handleBreakTimeChange = (value: string) => {

@@ -90,14 +90,16 @@ const PomodoroTimer = () => {
             >
               Stop
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
-              onClick={skipTimer}
-            >
-              Skip
-            </Button>
+            {isBreak && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
+                onClick={skipTimer}
+              >
+                Skip
+              </Button>
+            )}
           </>
         ) : (
           <Button

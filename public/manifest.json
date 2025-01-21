@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Productivity Buddy",
+  "name": "Pomodoro Grande",
   "version": "1.0",
-  "description": "A productivity extension that blocks distracting websites and helps users stay focused with a timer.",
+  "description": "Combines the classic Pomodoro Technique with essential productivity tools to help you stay on track.",
   "permissions": [
     "storage",
     "notifications",

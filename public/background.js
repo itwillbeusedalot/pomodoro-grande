@@ -26,6 +26,7 @@ let soundVolume = 0.5;
 chrome.storage.local.get(
   [
     "time",
+    "workTime",
     "isRunning",
     "breakTime",
     "selectedSound",
@@ -34,6 +35,7 @@ chrome.storage.local.get(
     "longBreak",
   ],
   (result) => {
+    WORK_TIME = result.workTime ?? WORK_TIME;
     time = result.time ?? WORK_TIME;
     BREAK_TIME = result.breakTime ?? BREAK_TIME;
     isRunning = result.isRunning ?? false;
@@ -46,11 +48,16 @@ chrome.storage.local.get(
 
 //*************************EVENT LISTENERS************************* */
 
+chrome.runtime.onStartup.addListener(() => {
+  stopTimer();
+});
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
   chrome.storage.local.set({
     time,
+    workTime: WORK_TIME,
     breakTime: BREAK_TIME,
     longBreak: LONG_BREAK_TIME,
     blockedSites: BLOCKED_SITES,
@@ -71,10 +78,15 @@ chrome.storage.onChanged.addListener(async (changes) => {
   if (changes.time) {
     time = changes.time.newValue;
     // Store the initial value of WORK_TIME to reset the value of "time" when all sessions are completed
-    if (!isRunning) {
-      WORK_TIME = changes.time.newValue;
-      updateBadge(WORK_TIME);
-    }
+    // if (!isRunning) {
+    //   WORK_TIME = changes.time.newValue;
+    //   updateBadge(WORK_TIME);
+    // }
+  }
+
+  if (changes.workTime) {
+    WORK_TIME = changes.workTime.newValue;
+    updateBadge(WORK_TIME);
   }
 
   if (changes.breakTime) {
@@ -198,7 +210,7 @@ const createNotification = ({ title, message }) => {
 
   setTimeout(() => {
     chrome.notifications.clear("reset-notif");
-  }, 15_000);
+  }, 1000 * 60);
 };
 
 //*****************BLOCKING SITES******************** */
