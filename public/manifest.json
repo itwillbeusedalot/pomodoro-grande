@@ -3,6 +3,20 @@
   "name": "Pomodoro Grande",
   "version": "1.0",
   "description": "Combines the classic Pomodoro Technique with essential productivity tools to help you stay on track.",
+  "icons": {
+    "16": "./assets/images/icon16.png",
+    "48": "./assets/images/icon48.png",
+    "128": "./assets/images/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "./assets/images/icon16.png",
+      "48": "./assets/images/icon48.png",
+      "128": "./assets/images/icon128.png"
+    },
+    "default_title": "Pomodoro Grande",
+    "default_popup": "index.html"
+  },
   "permissions": [
     "storage",
     "notifications",
@@ -18,9 +32,6 @@
       "js": ["content.js"]
     }
   ],
-  "action": {
-    "default_popup": "index.html"
-  },
   "host_permissions": ["<all_urls>"],
   "web_accessible_resources": [
     {

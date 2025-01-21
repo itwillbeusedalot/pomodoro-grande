@@ -201,16 +201,19 @@ const updateBadge = (time) => {
 };
 
 const createNotification = ({ title, message }) => {
-  chrome.notifications.create("reset-notif", {
+  const notificationId = `reset-notif-${Date.now()}`;
+
+  chrome.notifications.create(notificationId, {
     type: "basic",
-    iconUrl: "https://www.pngfind.com/images/lazy-bg.png",
+    iconUrl: chrome.runtime.getURL("./assets/images/icon128.png"),
     title,
     message,
+    priority: 2,
   });
 
   setTimeout(() => {
-    chrome.notifications.clear("reset-notif");
-  }, 1000 * 60);
+    chrome.notifications.clear(notificationId);
+  }, 1000 * 30);
 };
 
 //*****************BLOCKING SITES******************** */
