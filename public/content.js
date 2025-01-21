@@ -84,7 +84,7 @@ const createFocusOverlay = () => {
     overlay.style.alignItems = "center";
     overlay.style.zIndex = "9999";
     overlay.style.fontFamily = "Arial, sans-serif";
-    overlay.style.backdropFilter = "blur(4px)";
+    overlay.style.backdropFilter = "blur(8px)";
     overlay.style.pointerEvents = "all";
     document.body.appendChild(overlay);
     document.body.style.overflow = "hidden";
@@ -98,8 +98,8 @@ const createFocusOverlay = () => {
   });
 
   overlay.innerHTML = `
-    <h1 style="margin-bottom: 20px; font-size: 48px; text-align: center">Almost there! Keep up the good work!</h1>
-    <p style="font-size: 20px;">Time remaining: ${new Date(time)
+    <h1 style="margin-bottom: 20px; font-size: 48px; text-align: center; color: white">Almost there! Keep up the good work!</h1>
+    <p style="font-size: 20px; color: white">Time remaining: ${new Date(time)
       .toISOString()
       .slice(14, 19)}</p>
   `;

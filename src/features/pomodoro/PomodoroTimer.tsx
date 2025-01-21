@@ -2,6 +2,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
+import debounce from "@/lib/debounce";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
@@ -45,6 +46,10 @@ const PomodoroTimer = () => {
     });
   };
 
+  const skipTimer = debounce(() => {
+    browser.storage.local.set({ time: 0 });
+  }, 1000);
+
   return (
     <TabsContent
       value="timer"
@@ -71,14 +76,24 @@ const PomodoroTimer = () => {
 
       <div className="flex flex-wrap justify-center items-center gap-2">
         {isRunning ? (
-          <Button
-            size="sm"
-            variant="destructive"
-            className="min-w-28 bg-red-100 text-red-600 border  hover:bg-red-100/80"
-            onClick={stopTimer}
-          >
-            Stop
-          </Button>
+          <>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="min-w-28 bg-red-100 text-red-600 border  hover:bg-red-100/80"
+              onClick={stopTimer}
+            >
+              Stop
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
+              onClick={skipTimer}
+            >
+              Skip
+            </Button>
+          </>
         ) : (
           <Button
             size="sm"

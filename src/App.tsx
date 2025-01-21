@@ -9,7 +9,7 @@ import SiteBlocker from "./features/site-blocker/SiteBlocker";
 
 const DEFAULT_TAB_SIZE = {
   width: "w-80",
-  height: "h-[400px]",
+  height: "h-[350px]",
 };
 
 const App = () => {
