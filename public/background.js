@@ -1,6 +1,6 @@
 let WORK_TIME = 1000 * 60 * 25;
 let BREAK_TIME = 1000 * 60 * 5;
-let SESSIONS = 4;
+let LONG_BREAK_TIME = 1000 * 60 * 15;
 let BLOCKED_SITES = [
   "facebook.com",
   "twitter.com",
@@ -13,10 +13,12 @@ let BLOCKED_SITES = [
 ];
 
 let isRunning = false;
-let time = WORK_TIME;
-let interval;
 let isBreak = false;
-let sessions = SESSIONS;
+
+let interval;
+let time = WORK_TIME;
+let sessionCount = 0;
+
 let selectedSound = "clock.mp3";
 let isSoundEnabled = true;
 let soundVolume = 0.5;
@@ -26,19 +28,19 @@ chrome.storage.local.get(
     "time",
     "isRunning",
     "breakTime",
-    "sessions",
     "selectedSound",
     "isSoundEnabled",
     "soundVolume",
+    "longBreak",
   ],
   (result) => {
     time = result.time ?? WORK_TIME;
     BREAK_TIME = result.breakTime ?? BREAK_TIME;
     isRunning = result.isRunning ?? false;
-    sessions = result.sessions ?? SESSIONS;
     selectedSound = result.selectedSound ?? selectedSound;
     isSoundEnabled = result.isSoundEnabled ?? isSoundEnabled;
     soundVolume = result.soundVolume ?? soundVolume;
+    LONG_BREAK_TIME = result.longBreak ?? LONG_BREAK_TIME;
   }
 );
 
@@ -50,7 +52,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
     time,
     breakTime: BREAK_TIME,
-    sessions,
+    longBreak: LONG_BREAK_TIME,
     blockedSites: BLOCKED_SITES,
   });
 });
@@ -79,20 +81,16 @@ chrome.storage.onChanged.addListener(async (changes) => {
     BREAK_TIME = changes.breakTime.newValue;
   }
 
+  if (changes.longBreak) {
+    LONG_BREAK_TIME = changes.longBreak.newValue;
+  }
+
   if (changes.isBreak) {
     isBreak = changes.isBreak.newValue;
   }
 
   if ((changes.blockedSites || changes.allowedUrls) && isRunning) {
     blockAllSites();
-  }
-
-  if (changes.sessions) {
-    sessions = changes.sessions.newValue;
-    // Store the initial value of sessions to reset the value when all sessions are completed
-    if (!isRunning) {
-      SESSIONS = changes.sessions.newValue;
-    }
   }
 
   if (changes.selectedSound) {
@@ -115,11 +113,6 @@ const startTimer = () => {
   blockAllSites();
 
   interval = setInterval(() => {
-    if (sessions === 0) {
-      handleAllSessionsCompleted();
-      return;
-    }
-
     time -= 1000;
 
     if (time <= 0) {
@@ -137,8 +130,8 @@ const stopTimer = () => {
   time = WORK_TIME;
   isRunning = false;
   isBreak = false;
-  sessions = SESSIONS;
-  chrome.storage.local.set({ isRunning, time, isBreak, sessions });
+  sessionCount = 0;
+  chrome.storage.local.set({ isRunning, time, isBreak });
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
   unBlockAllSites();
@@ -149,24 +142,36 @@ const handleTimeEnds = () => {
     playSound();
   }
 
+  // Increment session count after work time ends
+  sessionCount = isBreak ? sessionCount : sessionCount + 1;
   isBreak = !isBreak;
-  time = isBreak ? BREAK_TIME : WORK_TIME;
-  sessions = isBreak ? sessions : sessions - 1;
-  chrome.storage.local.set({ isBreak, time, sessions });
-
-  const badgeColor = isBreak ? "#ffccd5" : "#40A662";
-  chrome.action.setBadgeBackgroundColor({ color: badgeColor });
-
-  createNotification({
-    title: isBreak ? "Break Time! ☀️" : "Work Time! ⏰",
-    message: isBreak ? "Take a break and recharge." : "Let's get to work!",
-  });
 
   if (isBreak) {
     unBlockAllSites();
   } else {
     blockAllSites();
   }
+
+  if (isBreak && sessionCount % 4 === 0) {
+    time = LONG_BREAK_TIME;
+    chrome.storage.local.set({ isBreak, time, isLongBreak: true });
+
+    createNotification({
+      title: "Long Break! ✨",
+      message: "Fantastic work session! Time for a proper recharge!",
+    });
+  } else {
+    time = isBreak ? BREAK_TIME : WORK_TIME;
+    chrome.storage.local.set({ isBreak, time, isLongBreak: false });
+
+    createNotification({
+      title: isBreak ? "Quick break! ☀️" : "Focus time! ⚡",
+      message: isBreak ? "Take a break and recharge." : "Let's get to work!",
+    });
+  }
+
+  const badgeColor = isBreak ? "#ffccd5" : "#40A662";
+  chrome.action.setBadgeBackgroundColor({ color: badgeColor });
 };
 
 const handleAllSessionsCompleted = () => {
@@ -193,7 +198,7 @@ const createNotification = ({ title, message }) => {
 
   setTimeout(() => {
     chrome.notifications.clear("reset-notif");
-  }, 5000);
+  }, 15_000);
 };
 
 //*****************BLOCKING SITES******************** */

@@ -8,6 +8,7 @@ const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
+  const [isLongBreak, setIsLongBreak] = useState(false);
 
   useEffect(() => {
     const syncState = async () => {
@@ -15,10 +16,12 @@ const PomodoroTimer = () => {
         "time",
         "isRunning",
         "isBreak",
+        "isLongBreak",
       ]);
       setTime((result.time as number) ?? 0);
       setIsRunning((result.isRunning as boolean) ?? false);
       setIsBreak((result.isBreak as boolean) ?? false);
+      setIsLongBreak((result.isLongBreak as boolean) ?? false);
     };
 
     syncState();
@@ -27,6 +30,7 @@ const PomodoroTimer = () => {
       if (changes.time) setTime(changes.time.newValue);
       if (changes.isRunning) setIsRunning(changes.isRunning.newValue);
       if (changes.isBreak) setIsBreak(changes.isBreak.newValue);
+      if (changes.isLongBreak) setIsLongBreak(changes.isLongBreak.newValue);
     };
 
     browser.storage.onChanged.addListener(handleStorageChange);
@@ -68,9 +72,10 @@ const PomodoroTimer = () => {
             isBreak ? "text-red-500" : "text-primary-custom"
           } text-xl text-center font-semibold mb-2`}
         >
-          {!isRunning && !isBreak && "Click start to begin"}
-          {isRunning && !isBreak && "Focus on your task"}
-          {isRunning && isBreak && "Take a break"}
+          {!isRunning && !isBreak && "Ready? Start! 🚀"}
+          {isRunning && !isBreak && "Focus time! ⚡"}
+          {isRunning && isBreak && !isLongBreak && "Quick break! ☀️"}
+          {isRunning && isBreak && isLongBreak && "Long Break! ✨"}
         </h1>
       </div>
 

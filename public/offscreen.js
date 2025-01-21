@@ -20,7 +20,6 @@ chrome.runtime.onMessage.addListener((request) => {
 
     audio.play().then(() => {
       isSoundPlaying = true;
-      chrome.storage.local.set({ isSoundPlaying: true });
     });
 
     audio.addEventListener("ended", () => {

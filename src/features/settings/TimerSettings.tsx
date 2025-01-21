@@ -9,34 +9,37 @@ import {
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 
-const WORKING_OPTIONS = [1, 15, 25, 35, 45].map((option) =>
+const WORKING_OPTIONS = [1, 15, 20, 25, 30, 45, 50].map((option) =>
   (option * ONE_MINUTE).toString()
 );
 
-const BREAK_OPTIONS = [1, 5, 10, 15, 20].map((option) =>
+const BREAK_OPTIONS = [1, 3, 5, 7, 10].map((option) =>
   (option * ONE_MINUTE).toString()
 );
-const SESSION_OPTIONS = [1, 2, 3, 4, 5].map((option) => option.toString());
+
+const LONG_BREAK_OPTIONS = [1, 15, 20, 25, 30].map((option) =>
+  (option * ONE_MINUTE).toString()
+);
 
 const TimerSettings = () => {
   const [time, setTime] = useState(WORKING_OPTIONS[2]);
   const [breakTime, setBreakTime] = useState(BREAK_OPTIONS[1]);
-  const [sessions, setSessions] = useState(SESSION_OPTIONS[4]);
   const [isRunning, setIsRunning] = useState(false);
+  const [longBreak, setLongBreak] = useState(LONG_BREAK_OPTIONS[1]);
 
   useEffect(() => {
     const loadSettings = async () => {
       const data = await browser.storage.local.get([
         "time",
         "breakTime",
-        "sessions",
         "isRunning",
+        "longBreak",
       ]);
 
       setTime(data?.time?.toString() ?? WORKING_OPTIONS[2]);
       setBreakTime(data?.breakTime?.toString() ?? BREAK_OPTIONS[1]);
-      setSessions(data?.sessions?.toString() ?? SESSION_OPTIONS[4]);
       setIsRunning((data.isRunning as boolean) ?? false);
+      setLongBreak(data?.longBreak?.toString() ?? LONG_BREAK_OPTIONS[1]);
     };
 
     loadSettings();
@@ -52,9 +55,9 @@ const TimerSettings = () => {
     browser.storage.local.set({ breakTime: parseInt(value) });
   };
 
-  const handleSessionsChange = (value: string) => {
-    setSessions(value);
-    browser.storage.local.set({ sessions: parseInt(value) });
+  const handleLongBreakChange = (value: string) => {
+    setLongBreak(value);
+    browser.storage.local.set({ longBreak: parseInt(value) });
   };
 
   return (
@@ -64,7 +67,7 @@ const TimerSettings = () => {
       </h1>
 
       <div className="flex items-center justify-between">
-        <p>Work time</p>
+        <p>Work</p>
 
         <Select
           disabled={isRunning}
@@ -86,7 +89,7 @@ const TimerSettings = () => {
       </div>
 
       <div className="flex items-center justify-between">
-        <p>Break time</p>
+        <p>Short Break</p>
 
         <Select
           disabled={isRunning}
@@ -108,21 +111,21 @@ const TimerSettings = () => {
       </div>
 
       <div className="flex items-center justify-between">
-        <p>Sessions</p>
+        <p>Long Break</p>
 
         <Select
           disabled={isRunning}
-          value={sessions}
-          onValueChange={handleSessionsChange}
-          defaultValue={sessions}
+          value={longBreak}
+          onValueChange={handleLongBreakChange}
+          defaultValue={longBreak}
         >
           <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
-            {SESSION_OPTIONS.map((option) => (
+            {LONG_BREAK_OPTIONS.map((option) => (
               <SelectItem key={option} value={option}>
-                {option}
+                {Number(option) / ONE_MINUTE} minutes
               </SelectItem>
             ))}
           </SelectContent>
