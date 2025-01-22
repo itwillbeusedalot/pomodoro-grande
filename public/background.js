@@ -17,12 +17,24 @@ let isBreak = false;
 
 let interval;
 let time = WORK_TIME;
-let sessionCount = 0;
+let sessionCount = 0; // Number of work sessions completed
 
 let selectedSound = "clock.mp3";
 let isSoundEnabled = true;
 let soundVolume = 0.5;
 
+const updateVariables = (changes) => {
+  WORK_TIME = changes.workTime ?? WORK_TIME;
+  time = changes.time ?? WORK_TIME;
+  BREAK_TIME = changes.breakTime ?? BREAK_TIME;
+  isRunning = changes.isRunning ?? isRunning;
+  selectedSound = changes.selectedSound ?? selectedSound;
+  isSoundEnabled = changes.isSoundEnabled ?? isSoundEnabled;
+  soundVolume = changes.soundVolume ?? soundVolume;
+  LONG_BREAK_TIME = changes.longBreak ?? LONG_BREAK_TIME;
+};
+
+// Initialize variables on startup
 chrome.storage.local.get(
   [
     "time",
@@ -34,16 +46,7 @@ chrome.storage.local.get(
     "soundVolume",
     "longBreak",
   ],
-  (result) => {
-    WORK_TIME = result.workTime ?? WORK_TIME;
-    time = result.time ?? WORK_TIME;
-    BREAK_TIME = result.breakTime ?? BREAK_TIME;
-    isRunning = result.isRunning ?? false;
-    selectedSound = result.selectedSound ?? selectedSound;
-    isSoundEnabled = result.isSoundEnabled ?? isSoundEnabled;
-    soundVolume = result.soundVolume ?? soundVolume;
-    LONG_BREAK_TIME = result.longBreak ?? LONG_BREAK_TIME;
-  }
+  (result) => updateVariables(result)
 );
 
 //*************************EVENT LISTENERS************************* */
@@ -64,10 +67,14 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-chrome.storage.onChanged.addListener(async (changes) => {
-  if (changes.isRunning) {
-    isRunning = changes.isRunning.newValue;
+// Listen for changes in storage realtime
+chrome.storage.onChanged.addListener((changes) => {
+  const newChanges = Object.fromEntries(
+    Object.entries(changes).map(([key, value]) => [key, value.newValue])
+  );
+  updateVariables(newChanges);
 
+  if (changes.isRunning) {
     if (isRunning) {
       startTimer();
     } else {
@@ -75,46 +82,12 @@ chrome.storage.onChanged.addListener(async (changes) => {
     }
   }
 
-  if (changes.time) {
-    time = changes.time.newValue;
-    // Store the initial value of WORK_TIME to reset the value of "time" when all sessions are completed
-    // if (!isRunning) {
-    //   WORK_TIME = changes.time.newValue;
-    //   updateBadge(WORK_TIME);
-    // }
-  }
-
-  if (changes.workTime) {
-    WORK_TIME = changes.workTime.newValue;
-    updateBadge(WORK_TIME);
-  }
-
-  if (changes.breakTime) {
-    BREAK_TIME = changes.breakTime.newValue;
-  }
-
-  if (changes.longBreak) {
-    LONG_BREAK_TIME = changes.longBreak.newValue;
-  }
-
-  if (changes.isBreak) {
-    isBreak = changes.isBreak.newValue;
-  }
-
   if ((changes.blockedSites || changes.allowedUrls) && isRunning) {
     blockAllSites();
   }
 
-  if (changes.selectedSound) {
-    selectedSound = changes.selectedSound.newValue;
-  }
-
-  if (changes.isSoundEnabled) {
-    isSoundEnabled = changes.isSoundEnabled.newValue;
-  }
-
-  if (changes.soundVolume) {
-    soundVolume = changes.soundVolume.newValue;
+  if (changes.workTime) {
+    updateBadge(WORK_TIME);
   }
 });
 
@@ -184,15 +157,6 @@ const handleTimeEnds = () => {
 
   const badgeColor = isBreak ? "#ffccd5" : "#40A662";
   chrome.action.setBadgeBackgroundColor({ color: badgeColor });
-};
-
-const handleAllSessionsCompleted = () => {
-  createNotification({
-    title: "All sessions completed! Time to take a long break!",
-    message: "You can start another session by clicking on the extension icon.",
-  });
-
-  return stopTimer();
 };
 
 const updateBadge = (time) => {

@@ -2,45 +2,26 @@ let isRunning = false;
 let time = 0;
 let isBreak = false;
 
+const updateVariables = (changes) => {
+  isRunning = changes.isRunning ?? isRunning;
+  time = changes.time ?? time;
+  isBreak = changes.isBreak ?? isBreak;
+};
+
 // Initialize state from storage
 chrome.storage.local.get(["time", "isRunning", "isBreak"], async (result) => {
-  time = result.time ?? 0;
-  isRunning = result.isRunning ?? false;
-  isBreak = result.isBreak ?? false;
-
-  if (isBreak) return removeFocusOverlay();
-
-  const currentUrl = window.location.href;
-
-  if (isRunning && !isBreak && (await isBlockedSite(currentUrl))) {
-    createFocusOverlay();
-  } else {
-    removeFocusOverlay();
-  }
+  updateVariables(result);
+  await handleOverlay();
 });
 
 // Listen for changes to storage
 chrome.storage.onChanged.addListener(async (changes) => {
-  if (changes.isRunning) {
-    isRunning = changes.isRunning.newValue;
-  }
+  const updatedChanges = Object.fromEntries(
+    Object.entries(changes).map(([key, value]) => [key, value.newValue])
+  );
+  updateVariables(updatedChanges);
 
-  if (changes.time) {
-    time = changes.time.newValue;
-  }
-
-  if (changes.isBreak) {
-    isBreak = changes.isBreak.newValue;
-    if (isBreak) return removeFocusOverlay();
-  }
-
-  const currentUrl = window.location.href;
-
-  if (isRunning && !isBreak && (await isBlockedSite(currentUrl))) {
-    createFocusOverlay();
-  } else {
-    removeFocusOverlay();
-  }
+  await handleOverlay();
 });
 
 //*****************BLOCKING******************** */
@@ -64,6 +45,20 @@ const isBlockedSite = async (url) => {
 };
 
 //*****************OVERLAY******************** */
+
+const handleOverlay = async () => {
+  if (isBreak) {
+    removeFocusOverlay();
+    return;
+  }
+
+  const currentUrl = window.location.href;
+  if (isRunning && (await isBlockedSite(currentUrl))) {
+    createFocusOverlay();
+  } else {
+    removeFocusOverlay();
+  }
+};
 
 const createFocusOverlay = () => {
   let overlay = document.getElementById("focus-overlay");
