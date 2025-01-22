@@ -32,7 +32,6 @@
       "js": ["content.js"]
     }
   ],
-  "host_permissions": ["<all_urls>"],
   "web_accessible_resources": [
     {
       "resources": ["./assets/sounds/*.mp3", "offscreen.html"],
