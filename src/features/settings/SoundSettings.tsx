@@ -17,6 +17,8 @@ const sounds = [
   { value: "iphone.mp3", label: "Iphone" },
   { value: "radar.mp3", label: "Radar" },
   { value: "butterfly.mp3", label: "Butterfly" },
+  { value: "GTA.mp3", label: "GTA" },
+  { value: "tada.mp3", label: "Tada" },
 ];
 
 const SoundSettings = () => {

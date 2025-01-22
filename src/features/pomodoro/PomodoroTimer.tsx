@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import debounce from "@/lib/debounce";
+import TodoProgress from "../todos/TodoProgress";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
@@ -59,7 +60,7 @@ const PomodoroTimer = () => {
       value="timer"
       className="flex flex-col items-center justify-center gap-6"
     >
-      <div className="text-center space-y-2 mt-10">
+      <div className="text-center space-y-2 mt-6">
         <p
           className={`${
             isBreak ? "text-red-500" : "text-primary-custom"
@@ -111,6 +112,8 @@ const PomodoroTimer = () => {
           </Button>
         )}
       </div>
+
+      {isRunning && <TodoProgress />}
     </TabsContent>
   );
 };

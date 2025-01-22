@@ -3,12 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import browser from "webextension-polyfill";
-
-type Todo = {
-  id: string;
-  title: string;
-  done: boolean;
-};
+import { Todo } from "@/types";
 
 const Todos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
