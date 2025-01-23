@@ -30,7 +30,7 @@ const TodoProgress = () => {
   if (completedTodos.length === todos.length) {
     return (
       <p className="mt-2 font-medium text-primary-custom">
-        Great work! 2/2 Todos completed! 🎉
+        Great work! {completedTodos.length}/{todos.length} Todos completed! 🎉
       </p>
     );
   }
