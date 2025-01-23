@@ -84,7 +84,7 @@ const Todos = () => {
               />
               <label
                 htmlFor={`todo-${todo.id}`}
-                className={`max-w-[200px] break-all ${
+                className={`max-w-[200px] break-words ${
                   todo.done ? "line-through text-gray-500" : ""
                 }`}
               >

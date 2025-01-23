@@ -27,12 +27,20 @@ const TodoProgress = () => {
 
   if (todos.length === 0) return null;
 
+  if (completedTodos.length === todos.length) {
+    return (
+      <p className="mt-2 font-medium text-primary-custom">
+        Great work! 2/2 Todos completed! 🎉
+      </p>
+    );
+  }
+
   return (
     <p className="mt-2">
       <span className="font-semibold text-primary-custom">
         {completedTodos?.length}
       </span>{" "}
-      out of{" "}
+      of{" "}
       <span className="font-semibold text-primary-custom">{todos.length}</span>{" "}
       Todos Completed
     </p>
