@@ -1,5 +1,6 @@
 import TimerSettings from "./TimerSettings";
 import SoundSettings from "./SoundSettings";
+import NotificationSettings from "./NotificationSettings";
 
 const Settings = () => {
   return (
@@ -9,6 +10,10 @@ const Settings = () => {
       <div className="w-full h-px bg-border"></div>
 
       <SoundSettings />
+
+      <div className="w-full h-px bg-border"></div>
+
+      <NotificationSettings />
     </div>
   );
 };

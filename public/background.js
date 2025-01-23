@@ -23,6 +23,8 @@ let selectedSound = "clock.mp3";
 let isSoundEnabled = true;
 let soundVolume = 0.5;
 
+let isNotificationEnabled = true;
+
 const updateVariables = (changes) => {
   WORK_TIME = changes.workTime ?? WORK_TIME;
   time = changes.time ?? WORK_TIME;
@@ -32,6 +34,8 @@ const updateVariables = (changes) => {
   isSoundEnabled = changes.isSoundEnabled ?? isSoundEnabled;
   soundVolume = changes.soundVolume ?? soundVolume;
   LONG_BREAK_TIME = changes.longBreak ?? LONG_BREAK_TIME;
+  isNotificationEnabled =
+    changes.isNotificationEnabled ?? isNotificationEnabled;
 };
 
 // Initialize variables on startup
@@ -45,6 +49,7 @@ chrome.storage.local.get(
     "isSoundEnabled",
     "soundVolume",
     "longBreak",
+    "isNotificationEnabled",
   ],
   (result) => updateVariables(result)
 );
@@ -165,6 +170,8 @@ const updateBadge = (time) => {
 };
 
 const createNotification = ({ title, message }) => {
+  if (!isNotificationEnabled) return;
+
   const notificationId = `reset-notif-${Date.now()}`;
 
   chrome.notifications.create(notificationId, {
