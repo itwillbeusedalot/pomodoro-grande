@@ -1,7 +1,6 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import browser from "webextension-polyfill";
 import debounce from "@/lib/debounce";
 import TodoProgress from "../todos/TodoProgress";
 
@@ -13,7 +12,7 @@ const PomodoroTimer = () => {
 
   useEffect(() => {
     const syncState = async () => {
-      const result = await browser.storage.local.get([
+      const result = await chrome.storage.local.get([
         "time",
         "isRunning",
         "isBreak",
@@ -34,25 +33,25 @@ const PomodoroTimer = () => {
       if (changes.isLongBreak) setIsLongBreak(changes.isLongBreak.newValue);
     };
 
-    browser.storage.onChanged.addListener(handleStorageChange);
+    chrome.storage.onChanged.addListener(handleStorageChange);
     return () => {
-      browser.storage.onChanged.removeListener(handleStorageChange);
+      chrome.storage.onChanged.removeListener(handleStorageChange);
     };
   }, []);
 
   const startTimer = () => {
-    browser.storage.local.set({ isRunning: true, isBreak: false });
+    chrome.storage.local.set({ isRunning: true, isBreak: false });
   };
 
   const stopTimer = () => {
-    browser.storage.local.set({
+    chrome.storage.local.set({
       isRunning: false,
       isBreak: false,
     });
   };
 
   const skipTimer = debounce(() => {
-    browser.storage.local.set({ time: 0 });
+    chrome.storage.local.set({ time: 0 });
   }, 1000);
 
   return (

@@ -47,7 +47,9 @@ const SoundSettings = () => {
 
   const handlePlay = () => {
     setIsSoundPlaying(false);
-    const sound = new Audio(`./assets/sounds/${selectedSound}`);
+    const sound = new Audio(
+      chrome.runtime.getURL(`assets/sounds/${selectedSound}`)
+    );
     sound.volume = soundVolume;
     sound.play();
 

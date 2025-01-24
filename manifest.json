@@ -4,15 +4,15 @@
   "version": "1.0",
   "description": "Combines the classic Pomodoro Technique with essential productivity tools to help you stay on track.",
   "icons": {
-    "16": "./assets/images/icon16.png",
-    "48": "./assets/images/icon48.png",
-    "128": "./assets/images/icon128.png"
+    "16": "assets/images/icon16.png",
+    "48": "assets/images/icon48.png",
+    "128": "assets/images/icon128.png"
   },
   "action": {
     "default_icon": {
-      "16": "./assets/images/icon16.png",
-      "48": "./assets/images/icon48.png",
-      "128": "./assets/images/icon128.png"
+      "16": "assets/images/icon16.png",
+      "48": "assets/images/icon48.png",
+      "128": "assets/images/icon128.png"
     },
     "default_title": "Pomodoro Grande",
     "default_popup": "index.html"
@@ -24,17 +24,18 @@
     "offscreen"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.ts",
+    "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["src/content.tsx"]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["./assets/sounds/*.mp3", "offscreen.html"],
+      "resources": ["assets/sounds/*.mp3", "offscreen.html"],
       "matches": ["<all_urls>"]
     }
   ]
