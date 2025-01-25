@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import browser from "webextension-polyfill";
+import { getBlockedSites } from "@/utils/sites";
 
 const BlockedSites = () => {
   const [sites, setSites] = useState<string[]>([]);
@@ -9,8 +10,8 @@ const BlockedSites = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    browser.storage.local.get("blockedSites").then((result) => {
-      if (result.blockedSites) setSites(result.blockedSites as string[]);
+    getBlockedSites().then((result) => {
+      if (result) setSites(result);
     });
   }, []);
 
@@ -30,7 +31,7 @@ const BlockedSites = () => {
       setSites([domain, ...sites]);
       setNewSite("");
       setError("");
-      browser.storage.local.set({ blockedSites: [...sites, domain] });
+      browser.storage.local.set({ blockedSites: [domain, ...sites] });
     } else if (sites.includes(domain)) {
       setError("This domain is already in the list.");
     }

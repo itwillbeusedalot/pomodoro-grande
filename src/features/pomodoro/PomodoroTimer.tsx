@@ -1,7 +1,7 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import debounce from "@/lib/debounce";
+import debounce from "@/utils/debounce";
 import TodoProgress from "../todos/TodoProgress";
 
 const PomodoroTimer = () => {

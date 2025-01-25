@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import debounce from "@/lib/debounce";
+import debounce from "@/utils/debounce";
 import browser from "webextension-polyfill";
 
 const sounds = [

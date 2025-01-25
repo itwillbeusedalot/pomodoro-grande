@@ -1,19 +1,7 @@
-type NotificationOptions = {
-  title: string;
-  message: string;
-};
-
-type Changes = {
-  time?: number;
-  workTime?: number;
-  isRunning?: boolean;
-  breakTime?: number;
-  selectedSound?: string;
-  isSoundEnabled?: boolean;
-  soundVolume?: number;
-  longBreak?: number;
-  isNotificationEnabled?: boolean;
-};
+import { StorageChanges } from "./types";
+import { updateBadge } from "./utils/badgeExtension";
+import { createNotification } from "./utils/notification";
+import { blockAllSites, unBlockAllSites } from "./utils/sites";
 
 let WORK_TIME = 1000 * 60 * 25;
 let BREAK_TIME = 1000 * 60 * 5;
@@ -42,7 +30,7 @@ let soundVolume = 0.5;
 
 let isNotificationEnabled = true;
 
-const updateVariables = (changes: Changes): void => {
+const updateVariables = (changes: StorageChanges): void => {
   if (changes.time !== undefined) time = changes.time;
   if (changes.workTime) WORK_TIME = changes.workTime;
   if (changes.breakTime) BREAK_TIME = changes.breakTime;
@@ -72,7 +60,7 @@ chrome.storage.local.get(
     "longBreak",
     "isNotificationEnabled",
   ],
-  (result) => updateVariables(result as Changes)
+  (result) => updateVariables(result as StorageChanges)
 );
 
 chrome.runtime.onStartup.addListener(() => {
@@ -92,7 +80,7 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.storage.onChanged.addListener((changes) => {
-  const newChanges: Changes = Object.fromEntries(
+  const newChanges: StorageChanges = Object.fromEntries(
     Object.entries(changes).map(([key, value]) => [key, value.newValue])
   );
   updateVariables(newChanges);
@@ -162,112 +150,26 @@ const handleTimeEnds = (): void => {
     time = LONG_BREAK_TIME;
     chrome.storage.local.set({ isBreak, time, isLongBreak: true });
 
-    createNotification({
-      title: "Long Break! ✨",
-      message: "Fantastic work session! Time for a proper recharge!",
-    });
+    if (isNotificationEnabled) {
+      createNotification({
+        title: "Long Break! ✨",
+        message: "Fantastic work session! Time for a proper recharge!",
+      });
+    }
   } else {
     time = isBreak ? BREAK_TIME : WORK_TIME;
     chrome.storage.local.set({ isBreak, time, isLongBreak: false });
 
-    createNotification({
-      title: isBreak ? "Quick break! ☀️" : "Focus time! ⚡",
-      message: isBreak ? "Take a break and recharge." : "Let's get to work!",
-    });
+    if (isNotificationEnabled) {
+      createNotification({
+        title: isBreak ? "Quick break! ☀️" : "Focus time! ⚡",
+        message: isBreak ? "Take a break and recharge." : "Let's get to work!",
+      });
+    }
   }
 
   const badgeColor = isBreak ? "#ffccd5" : "#40A662";
   chrome.action.setBadgeBackgroundColor({ color: badgeColor });
-};
-
-const updateBadge = (time: number): void => {
-  const formattedTime = new Date(time).toISOString().slice(14, 19);
-  chrome.action.setBadgeText({ text: formattedTime });
-};
-
-const createNotification = ({ title, message }: NotificationOptions): void => {
-  if (!isNotificationEnabled) return;
-
-  const notificationId = `reset-notif-${Date.now()}`;
-
-  chrome.notifications.create(notificationId, {
-    type: "basic",
-    iconUrl: chrome.runtime.getURL("assets/images/icon128.png"),
-    title,
-    message,
-    priority: 2,
-  });
-
-  setTimeout(() => {
-    chrome.notifications.clear(notificationId);
-  }, 1000 * 30);
-};
-
-const blockAllSites = async (): Promise<void> => {
-  let ruleId = 1;
-  const allowedUrls = await getAllowedUrls();
-
-  const allowedRules = allowedUrls.map((site) => ({
-    id: ruleId++,
-    priority: 2,
-    action: { type: "allow" },
-    condition: {
-      urlFilter: site,
-      resourceTypes: ["main_frame"],
-    },
-  }));
-
-  const blockedSites = await getBlockedSites();
-
-  const blockedRules = blockedSites.map((site) => ({
-    id: ruleId++,
-    priority: 1,
-    action: { type: "block" },
-    condition: {
-      urlFilter: `||${site}/`,
-      resourceTypes: ["main_frame"],
-    },
-  }));
-
-  const rules = [...allowedRules, ...blockedRules];
-
-  try {
-    const existingRuleIds = await getBlockedSiteIds();
-    await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: existingRuleIds,
-      // @ts-ignore
-      addRules: rules,
-    });
-  } catch (error) {
-    console.error("Error updating rules:", error);
-  }
-};
-
-const unBlockAllSites = async (): Promise<void> => {
-  const existingRuleIds = await getBlockedSiteIds();
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: existingRuleIds,
-  });
-};
-
-const getBlockedSiteIds = async (): Promise<number[]> => {
-  try {
-    const rules = await chrome.declarativeNetRequest.getDynamicRules();
-    return rules.map((rule) => rule.id);
-  } catch (error) {
-    console.error("Error getting existing rules:", error);
-    return [];
-  }
-};
-
-const getBlockedSites = async (): Promise<string[]> => {
-  const { blockedSites } = await chrome.storage.local.get("blockedSites");
-  return blockedSites || BLOCKED_SITES;
-};
-
-const getAllowedUrls = async (): Promise<string[]> => {
-  const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
-  return allowedUrls || [];
 };
 
 const ensureOffscreenDocument = (callback?: () => void): void => {

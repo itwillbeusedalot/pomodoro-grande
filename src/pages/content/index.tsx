@@ -1,13 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "./content.css";
-
-interface StorageChanges {
-  isRunning?: boolean;
-  time?: number;
-  isBreak?: boolean;
-  blockedSites?: string[];
-  allowedUrls?: string[];
-}
+import { isBlockedSite } from "@/utils/sites";
+import { StorageChanges } from "@/types";
 
 const createFocusOverlay = (): void => {
   let overlay = document.getElementById("focus-overlay");
@@ -58,26 +52,9 @@ const removeFocusOverlay = (): void => {
 
 const Content: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [time, setTime] = useState(0);
   const [isBreak, setIsBreak] = useState(false);
-
-  const getBlockedSites = async (): Promise<string[]> => {
-    const { blockedSites } = await chrome.storage.local.get("blockedSites");
-    return blockedSites || [];
-  };
-
-  const getAllowedUrls = async (): Promise<string[]> => {
-    const { allowedUrls } = await chrome.storage.local.get("allowedUrls");
-    return allowedUrls || [];
-  };
-
-  const isBlockedSite = async (url: string): Promise<boolean> => {
-    const allowedUrls = await getAllowedUrls();
-    if (allowedUrls.some((site) => url.includes(site))) return false;
-
-    const blockedSites = await getBlockedSites();
-    return blockedSites.some((site) => url.includes(site));
-  };
+  const [blockedSites, setBlockedSites] = useState<string[]>([]);
+  const [allowedUrls, setAllowedUrls] = useState<string[]>([]);
 
   const handleOverlay = useCallback(async () => {
     if (isBreak) {
@@ -93,18 +70,20 @@ const Content: React.FC = () => {
     } else {
       removeFocusOverlay();
     }
-  }, [isRunning, isBreak, time]);
+  }, [isRunning, isBreak, blockedSites, allowedUrls]);
 
   useEffect(() => {
     const fetchStorageData = async () => {
       const result: StorageChanges = await chrome.storage.local.get([
-        "time",
         "isRunning",
         "isBreak",
+        "blockedSites",
+        "allowedUrls",
       ]);
       setIsRunning(result.isRunning ?? false);
-      setTime(result.time ?? 0);
       setIsBreak(result.isBreak ?? false);
+      setBlockedSites(result.blockedSites ?? []);
+      setAllowedUrls(result.allowedUrls ?? []);
     };
 
     fetchStorageData();
@@ -112,13 +91,12 @@ const Content: React.FC = () => {
     const onStorageChange = (changes: {
       [key: string]: chrome.storage.StorageChange;
     }) => {
-      const updatedChanges: StorageChanges = Object.fromEntries(
-        Object.entries(changes).map(([key, value]) => [key, value.newValue])
-      );
-      if (updatedChanges.isRunning !== undefined)
-        setIsRunning(updatedChanges.isRunning);
-      if (updatedChanges.isBreak !== undefined)
-        setIsBreak(updatedChanges.isBreak);
+      Object.entries(changes).forEach(([key, { newValue }]) => {
+        if (key === "isRunning") setIsRunning(newValue ?? false);
+        if (key === "isBreak") setIsBreak(newValue ?? false);
+        if (key === "blockedSites") setBlockedSites(newValue ?? []);
+        if (key === "allowedUrls") setAllowedUrls(newValue ?? []);
+      });
     };
 
     chrome.storage.onChanged.addListener(onStorageChange);

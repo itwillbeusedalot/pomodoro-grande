@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import browser from "webextension-polyfill";
+import { getAllowedUrls } from "@/utils/sites";
 
 const AllowedUrls = () => {
   const [allowedUrls, setAllowedUrls] = useState<string[]>([]);
@@ -9,8 +10,8 @@ const AllowedUrls = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    browser.storage.local.get("allowedUrls").then((result) => {
-      if (result.allowedUrls) setAllowedUrls(result.allowedUrls as string[]);
+    getAllowedUrls().then((result) => {
+      if (result) setAllowedUrls(result);
     });
   }, []);
 
@@ -21,7 +22,7 @@ const AllowedUrls = () => {
       setAllowedUrls([newUrl, ...allowedUrls]);
       setNewUrl("");
       setError("");
-      browser.storage.local.set({ allowedUrls: [...allowedUrls, newUrl] });
+      browser.storage.local.set({ allowedUrls: [newUrl, ...allowedUrls] });
     } else if (allowedUrls.includes(newUrl)) {
       setError("This url is already in the list.");
     }
