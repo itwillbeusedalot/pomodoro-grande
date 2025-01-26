@@ -1,4 +1,4 @@
-import { StorageChanges } from "./types";
+import { PomodoroHistory, StorageChanges, Todo } from "./types";
 import { updateBadge } from "./utils/badgeExtension";
 import { createNotification } from "./utils/notification";
 import { blockAllSites, unBlockAllSites } from "./utils/sites";
@@ -22,13 +22,15 @@ let isBreak = false;
 
 let interval: NodeJS.Timeout | undefined;
 let time = WORK_TIME;
-let sessionCount = 0;
+let pomodoroCount = 0; // 1 Work = 1 Pomodoro
 
 let selectedSound = "clock.mp3";
 let isSoundEnabled = true;
 let soundVolume = 0.5;
 
 let isNotificationEnabled = true;
+
+let completedTodos: Todo[] = [];
 
 const updateVariables = (changes: StorageChanges): void => {
   if (changes.time !== undefined) time = changes.time;
@@ -93,6 +95,10 @@ chrome.storage.onChanged.addListener((changes) => {
     }
   }
 
+  if (changes.todos && newChanges.todos && isRunning) {
+    completedTodos = newChanges.todos.filter((todo: Todo) => todo.isCompleted);
+  }
+
   if ((changes.blockedSites || changes.allowedUrls) && isRunning) {
     blockAllSites();
   }
@@ -108,7 +114,6 @@ const startTimer = (): void => {
 
   interval = setInterval(() => {
     time -= 1000;
-    console.log(time);
 
     if (time <= 0) {
       handleTimeEnds();
@@ -120,13 +125,19 @@ const startTimer = (): void => {
   }, 1000);
 };
 
-const stopTimer = (): void => {
+const stopTimer = async (): Promise<void> => {
+  if (pomodoroCount >= 1) {
+    recordPomodoroHistory();
+  }
+
   clearInterval(interval);
   time = WORK_TIME;
   isRunning = false;
   isBreak = false;
-  sessionCount = 0;
-  chrome.storage.local.set({ isRunning, time, isBreak });
+  await chrome.storage.local.set({ isRunning, time, isBreak });
+
+  completedTodos = [];
+  pomodoroCount = 0;
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
   unBlockAllSites();
@@ -137,7 +148,7 @@ const handleTimeEnds = (): void => {
     playSound();
   }
 
-  sessionCount = isBreak ? sessionCount : sessionCount + 1;
+  pomodoroCount = isBreak ? pomodoroCount : pomodoroCount + 1;
   isBreak = !isBreak;
 
   if (isBreak) {
@@ -146,7 +157,7 @@ const handleTimeEnds = (): void => {
     blockAllSites();
   }
 
-  if (isBreak && sessionCount % 4 === 0) {
+  if (isBreak && pomodoroCount % 4 === 0) {
     time = LONG_BREAK_TIME;
     chrome.storage.local.set({ isBreak, time, isLongBreak: true });
 
@@ -199,5 +210,22 @@ const playSound = (): void => {
       selectedSound,
       soundVolume,
     });
+  });
+};
+
+//*************** Pomodoro history *******************/
+const recordPomodoroHistory = (): void => {
+  chrome.storage.sync.get("pomodoroHistory", (result) => {
+    const history: PomodoroHistory[] = result.pomodoroHistory || [];
+    const newData = {
+      createdAt: new Date().toLocaleString(),
+      totalPomodoros: pomodoroCount,
+      completedTodos: completedTodos.length,
+      totalWorkTime: (pomodoroCount * WORK_TIME) / 1000 / 60,
+    };
+    history.unshift(newData);
+    // Keep only the last 100 entries
+    const trimmedHistory = history.slice(-100);
+    chrome.storage.sync.set({ pomodoroHistory: trimmedHistory });
   });
 };

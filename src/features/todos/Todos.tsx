@@ -24,7 +24,7 @@ const Todos = () => {
     const newTodo = {
       id: Math.floor(Math.random() * 10_000).toString(),
       title: inputValue,
-      done: false,
+      isCompleted: false,
     };
     const updatedTodos = [newTodo, ...todos];
     setTodos(updatedTodos);
@@ -41,7 +41,7 @@ const Todos = () => {
 
   const toggleTodo = (id: string) => {
     const updatedTodos = todos.map((todo) =>
-      todo.id === id ? { ...todo, done: !todo.done } : todo
+      todo.id === id ? { ...todo, isCompleted: !todo.isCompleted } : todo
     );
     setTodos(updatedTodos);
     browser.storage.local.set({ todos: updatedTodos });
@@ -79,13 +79,13 @@ const Todos = () => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id={`todo-${todo.id}`}
-                checked={todo.done}
+                checked={todo.isCompleted}
                 onCheckedChange={() => toggleTodo(todo.id)}
               />
               <label
                 htmlFor={`todo-${todo.id}`}
                 className={`max-w-[200px] break-words ${
-                  todo.done ? "line-through text-gray-500" : ""
+                  todo.isCompleted ? "line-through text-gray-500" : ""
                 }`}
               >
                 {todo.title}

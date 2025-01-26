@@ -1,7 +1,7 @@
 export type Todo = {
   id: string;
   title: string;
-  done: boolean;
+  isCompleted: boolean;
 };
 
 export type StorageChanges = {
@@ -21,4 +21,11 @@ export type StorageChanges = {
   blockedSites?: string[];
   allowedUrls?: string[];
   todos?: Todo[];
+};
+
+export type PomodoroHistory = {
+  createdAt: string;
+  totalPomodoros: number;
+  completedTodos: number;
+  totalWorkTime: number;
 };

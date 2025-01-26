@@ -82,11 +82,14 @@ const TimerSettings = () => {
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
-            {WORKING_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option}>
-                {Number(option) / ONE_MINUTE} minutes
-              </SelectItem>
-            ))}
+            {WORKING_OPTIONS.map((option) => {
+              const value = Number(option) / ONE_MINUTE;
+              return (
+                <SelectItem key={option} value={option}>
+                  {value} {value > 1 ? "minutes" : "minute"}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
@@ -104,11 +107,14 @@ const TimerSettings = () => {
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
-            {BREAK_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option}>
-                {Number(option) / ONE_MINUTE} minutes
-              </SelectItem>
-            ))}
+            {BREAK_OPTIONS.map((option) => {
+              const value = Number(option) / ONE_MINUTE;
+              return (
+                <SelectItem key={option} value={option}>
+                  {value} {value > 1 ? "minutes" : "minute"}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
@@ -126,11 +132,14 @@ const TimerSettings = () => {
             <SelectValue placeholder="Select time" />
           </SelectTrigger>
           <SelectContent>
-            {LONG_BREAK_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option}>
-                {Number(option) / ONE_MINUTE} minutes
-              </SelectItem>
-            ))}
+            {LONG_BREAK_OPTIONS.map((option) => {
+              const value = Number(option) / ONE_MINUTE;
+              return (
+                <SelectItem key={option} value={option}>
+                  {value} {value > 1 ? "minutes" : "minute"}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>
