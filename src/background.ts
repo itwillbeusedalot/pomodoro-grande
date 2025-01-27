@@ -31,6 +31,7 @@ let soundVolume = 0.5;
 let isNotificationEnabled = true;
 
 let completedTodos: Todo[] = [];
+let todosStateAtStart: Todo[] = [];
 
 const updateVariables = (changes: StorageChanges): void => {
   if (changes.time !== undefined) time = changes.time;
@@ -95,8 +96,15 @@ chrome.storage.onChanged.addListener((changes) => {
     }
   }
 
+  // If the user completes a todo while the timer is running
   if (changes.todos && newChanges.todos && isRunning) {
-    completedTodos = newChanges.todos.filter((todo: Todo) => todo.isCompleted);
+    const newlyCompletedTodos = newChanges.todos.filter((todo: Todo) => {
+      const todoAtStart = todosStateAtStart.find((t) => t.id === todo.id);
+
+      return todo.isCompleted && (!todoAtStart || !todoAtStart.isCompleted);
+    });
+
+    completedTodos = newlyCompletedTodos;
   }
 
   if ((changes.blockedSites || changes.allowedUrls) && isRunning) {
@@ -111,6 +119,11 @@ chrome.storage.onChanged.addListener((changes) => {
 const startTimer = (): void => {
   clearInterval(interval);
   blockAllSites();
+
+  chrome.storage.local.get("todos", (result) => {
+    todosStateAtStart = result.todos || [];
+  });
+  completedTodos = [];
 
   interval = setInterval(() => {
     time -= 1000;
