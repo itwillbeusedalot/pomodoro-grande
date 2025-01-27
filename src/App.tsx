@@ -6,6 +6,7 @@ import PomodoroTimer from "./features/pomodoro/PomodoroTimer";
 import { useState } from "react";
 import Todos from "./features/todos/Todos";
 import SiteBlocker from "./features/site-blocker/SiteBlocker";
+import AnalyticsTab from "./features/analytics/AnalyticsTab";
 
 const DEFAULT_TAB_SIZE = {
   width: "w-80",
@@ -18,10 +19,10 @@ const App = () => {
   const handleTabResize = (value: string) => {
     if (value === "timer") {
       setTabSize(DEFAULT_TAB_SIZE);
-    } else if (value === "settings") {
+    } else if (value === "analytics") {
       setTabSize({
-        width: DEFAULT_TAB_SIZE.width,
-        height: "h-[600px]",
+        width: "w-[550px]",
+        height: "h-[500px]",
       });
     } else {
       setTabSize({
@@ -49,6 +50,9 @@ const App = () => {
         </TabsContent>
         <TabsContent value="todos">
           <Todos />
+        </TabsContent>
+        <TabsContent value="analytics">
+          <AnalyticsTab />
         </TabsContent>
       </div>
 

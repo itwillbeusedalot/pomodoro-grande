@@ -223,7 +223,7 @@ const recordPomodoroHistory = (): void => {
       completedTodos: completedTodos.length,
       totalWorkTime: (pomodoroCount * WORK_TIME) / 1000 / 60,
     };
-    history.unshift(newData);
+    history.push(newData);
     // Keep only the last 100 entries
     const trimmedHistory = history.slice(-100);
     chrome.storage.sync.set({ pomodoroHistory: trimmedHistory });

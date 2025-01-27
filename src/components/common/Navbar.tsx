@@ -1,4 +1,10 @@
-import { Globe, ListTodo, Settings, Timer } from "lucide-react";
+import {
+  ChartNoAxesCombined,
+  Globe,
+  ListTodo,
+  Settings,
+  Timer,
+} from "lucide-react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const NAV_ITEMS = [
@@ -15,6 +21,10 @@ const NAV_ITEMS = [
     icon: Globe,
   },
   {
+    value: "analytics",
+    icon: ChartNoAxesCombined,
+  },
+  {
     value: "settings",
     icon: Settings,
   },
@@ -22,7 +32,7 @@ const NAV_ITEMS = [
 
 const Navbar = () => {
   return (
-    <TabsList className="text-primary-custom border-t bg-secondary-custom/5 w-full gap-4 px-4 py-6 rounded-none">
+    <TabsList className="text-primary-custom border-t bg-secondary-custom/5 w-full gap-3 px-4 py-6 rounded-none">
       {NAV_ITEMS.map(({ value, icon: Icon }) => (
         <TabsTrigger
           key={value}
