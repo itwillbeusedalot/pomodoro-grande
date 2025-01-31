@@ -8,6 +8,13 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
+import { CircleHelp } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const WORKING_OPTIONS = [1, 15, 20, 25, 30, 45, 50].map((option) =>
   (option * ONE_MINUTE).toString()
@@ -65,9 +72,9 @@ const TimerSettings = () => {
 
   return (
     <div className="w-full space-y-2">
-      <h1 className="text-base text-center font-semibold mb-2">
+      {/* <h1 className="text-base text-center font-semibold mb-2">
         Timer Settings
-      </h1>
+      </h1> */}
 
       <div className="flex items-center justify-between">
         <p>Work</p>
@@ -120,7 +127,19 @@ const TimerSettings = () => {
       </div>
 
       <div className="flex items-center justify-between">
-        <p>Long Break</p>
+        <div className="flex items-center gap-2">
+          <p>Long Break</p>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger>
+                <CircleHelp className="text-primary-custom size-4" />
+              </TooltipTrigger>
+              <TooltipContent className="w-[200px] bg-primary-custom text-center">
+                <p>Long break is taken after 4 work sessions.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
         <Select
           disabled={isRunning}

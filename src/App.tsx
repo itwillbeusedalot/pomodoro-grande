@@ -26,8 +26,8 @@ const App = () => {
       });
     } else if (value === "settings") {
       setTabSize({
-        width: DEFAULT_TAB_SIZE.width,
-        height: "h-[600px]",
+        width: "w-[350px]",
+        height: "h-[500px]",
       });
     } else {
       setTabSize({
