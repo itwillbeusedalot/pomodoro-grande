@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
@@ -7,6 +7,13 @@ import {
 } from "@/components/ui/chart";
 import { useEffect, useMemo, useState } from "react";
 import { PomodoroHistory } from "@/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { CircleHelp } from "lucide-react";
 
 type CustomBarLabel = {
   x: number;
@@ -14,6 +21,10 @@ type CustomBarLabel = {
   width: number;
   value: number;
 };
+
+const SEVEN_DAYS_DATE = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+const THIRTY_DAYS_DATE = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
+const THREE_MONTHS_DATE = new Date(Date.now() - 93 * 24 * 60 * 60 * 1000);
 
 const CHART_DATA = [
   {
@@ -43,15 +54,14 @@ const AnalyticsTab = () => {
   const [chartData, setChartData] = useState<PomodoroHistory[]>(CHART_DATA);
   const [activeChart, setActiveChart] =
     useState<keyof typeof chartConfig>("totalPomodoros");
+  const [filterDate, setFilterDate] = useState<Date>(SEVEN_DAYS_DATE);
 
   useEffect(() => {
-    chrome.storage.sync.get("pomodoroHistory").then((result) => {
+    chrome.storage.local.get("pomodoroHistory").then((result) => {
       if (result.pomodoroHistory) {
         const data = result.pomodoroHistory as PomodoroHistory[];
 
         const today = new Date();
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 8);
 
         // Combine data with the same date and filter for the last 7 days
         const filteredData: PomodoroHistory[] = Object.values(
@@ -62,7 +72,7 @@ const AnalyticsTab = () => {
 
             const currentDate = new Date(date);
 
-            if (currentDate >= sevenDaysAgo && currentDate <= today) {
+            if (currentDate >= filterDate && currentDate <= today) {
               if (!acc[date]) {
                 acc[date] = { ...current };
               } else {
@@ -79,7 +89,7 @@ const AnalyticsTab = () => {
         setChartData(filteredData || CHART_DATA);
       }
     });
-  }, []);
+  }, [filterDate]);
 
   const total = useMemo(
     () => ({
@@ -100,6 +110,19 @@ const AnalyticsTab = () => {
   );
 
   const renderCustomBarLabel = ({ x, y, width, value }: CustomBarLabel) => {
+    // Hide label for total work time when not viewing the last 7 days
+    if (
+      activeChart === "totalWorkTime" &&
+      filterDate?.toDateString() !== SEVEN_DAYS_DATE?.toDateString()
+    ) {
+      return <></>;
+    }
+
+    // Hide label for 30 days and 3 months
+    if (filterDate?.toDateString() === THREE_MONTHS_DATE?.toDateString()) {
+      return <></>;
+    }
+
     const isWorkTime = activeChart === "totalWorkTime";
     const labelSuffix = isWorkTime ? (value > 1 ? "mins" : "min") : "";
 
@@ -112,7 +135,54 @@ const AnalyticsTab = () => {
 
   return (
     <div className="w-full space-y-2">
-      <h1 className="text-base text-center font-semibold">Your 7-Day Rhythm</h1>
+      <div className="flex items-center justify-center gap-2">
+        <h1 className="text-base text-center font-semibold">
+          Productivity Overview
+        </h1>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger>
+              <CircleHelp className="text-primary-custom size-4" />
+            </TooltipTrigger>
+            <TooltipContent className="w-[200px] bg-primary-custom text-center">
+              <p>Sessions with at least one Pomodoro are saved.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
+      <div className="mx-auto flex items-center justify-center gap-2">
+        <p
+          onClick={() => setFilterDate(SEVEN_DAYS_DATE)}
+          className={`${
+            filterDate?.toDateString() === SEVEN_DAYS_DATE?.toDateString()
+              ? "bg-primary-custom"
+              : "bg-primary-custom/70"
+          } text-xs text-white px-4 py-1 hover:bg-primary-custom/90 cursor-pointer rounded-full`}
+        >
+          Last 7 days
+        </p>
+        <p
+          onClick={() => setFilterDate(THIRTY_DAYS_DATE)}
+          className={`${
+            filterDate?.toDateString() === THIRTY_DAYS_DATE?.toDateString()
+              ? "bg-primary-custom"
+              : "bg-primary-custom/70"
+          } text-xs text-white px-4 py-1 hover:bg-primary-custom/90 cursor-pointer rounded-full`}
+        >
+          Last 30 days
+        </p>
+        <p
+          onClick={() => setFilterDate(THREE_MONTHS_DATE)}
+          className={`${
+            filterDate?.toDateString() === THREE_MONTHS_DATE?.toDateString()
+              ? "bg-primary-custom"
+              : "bg-primary-custom/70"
+          } text-xs text-white px-4 py-1 hover:bg-primary-custom/90 cursor-pointer rounded-full`}
+        >
+          Last 3 months
+        </p>
+      </div>
 
       <div className="flex">
         {["totalPomodoros", "completedTodos", "totalWorkTime"].map((key) => {
@@ -123,7 +193,7 @@ const AnalyticsTab = () => {
             <button
               key={chart}
               data-active={activeChart === chart}
-              className="relative z-30 flex flex-1 flex-col  gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-primary-custom/10 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
+              className="relative z-30 flex flex-1 flex-col  gap-1 border-t px-4 py-2 text-left even:border-l data-[active=true]:bg-primary-custom/10 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
               onClick={() => setActiveChart(chart)}
             >
               <span className="text-xs text-muted-foreground">
@@ -188,11 +258,42 @@ const AnalyticsTab = () => {
                 className="w-[150px]"
                 nameKey="views"
                 labelFormatter={(value) => {
+                  if (
+                    new Date(value).toDateString() === new Date().toDateString()
+                  ) {
+                    return "Today";
+                  }
+
                   return new Date(value).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   });
+                }}
+                formatter={(value) => {
+                  const labelMap = {
+                    totalWorkTime: "Work Time",
+                    completedTodos: "Completed Todos",
+                    totalPomodoros: "Total Pomodoros",
+                  };
+
+                  const suffix =
+                    activeChart === "totalWorkTime"
+                      ? Number(value) > 1
+                        ? "mins"
+                        : "min"
+                      : "";
+
+                  return (
+                    <div className="flex items-center gap-1">
+                      <div className="text-xs text-muted-foreground">
+                        {labelMap[activeChart]}:
+                      </div>
+                      <p className="text-[10px] font-medium">
+                        {value} {suffix}
+                      </p>
+                    </div>
+                  );
                 }}
               />
             }
@@ -205,6 +306,10 @@ const AnalyticsTab = () => {
           />
         </BarChart>
       </ChartContainer>
+
+      <p className="text-xs text-center text-zinc-500">
+        {`${filterDate?.toLocaleDateString()} - ${new Date()?.toLocaleDateString()}`}
+      </p>
     </div>
   );
 };

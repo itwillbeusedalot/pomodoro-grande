@@ -228,7 +228,7 @@ const playSound = (): void => {
 
 //*************** Pomodoro history *******************/
 const recordPomodoroHistory = (): void => {
-  chrome.storage.sync.get("pomodoroHistory", (result) => {
+  chrome.storage.local.get("pomodoroHistory", (result) => {
     const history: PomodoroHistory[] = result.pomodoroHistory || [];
     const newData = {
       createdAt: new Date().toLocaleString(),
@@ -236,9 +236,24 @@ const recordPomodoroHistory = (): void => {
       completedTodos: completedTodos.length,
       totalWorkTime: (pomodoroCount * WORK_TIME) / 1000 / 60,
     };
-    history.push(newData);
-    // Keep only the last 100 entries
-    const trimmedHistory = history.slice(-100);
-    chrome.storage.sync.set({ pomodoroHistory: trimmedHistory });
+
+    const aggregatedHistory: PomodoroHistory[] = Object.values(
+      [...history, newData].reduce((acc, current) => {
+        const date = new Date(current.createdAt).toISOString().split("T")[0];
+
+        if (!acc[date]) {
+          acc[date] = { ...current, createdAt: date };
+        } else {
+          acc[date].totalPomodoros += current.totalPomodoros;
+          acc[date].completedTodos += current.completedTodos;
+          acc[date].totalWorkTime += current.totalWorkTime;
+        }
+
+        return acc;
+      }, {} as { [key: string]: PomodoroHistory })
+    );
+
+    const trimmedHistory = aggregatedHistory.slice(-100);
+    chrome.storage.local.set({ pomodoroHistory: trimmedHistory });
   });
 };

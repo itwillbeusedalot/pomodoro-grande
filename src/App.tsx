@@ -22,7 +22,7 @@ const App = () => {
     } else if (value === "analytics") {
       setTabSize({
         width: "w-[550px]",
-        height: "h-[500px]",
+        height: "h-[520px]",
       });
     } else if (value === "settings") {
       setTabSize({
