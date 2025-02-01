@@ -12,6 +12,7 @@ export type StorageChanges = {
 
   isRunning?: boolean;
   isBreak?: boolean;
+  ultraFocusMode?: boolean;
 
   isSoundEnabled?: boolean;
   selectedSound?: string;

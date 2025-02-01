@@ -19,6 +19,7 @@ let BLOCKED_SITES: string[] = [
 
 let isRunning = false;
 let isBreak = false;
+let ultraFocusMode = false;
 
 let interval: NodeJS.Timeout | undefined;
 let time = WORK_TIME;
@@ -49,6 +50,9 @@ const updateVariables = (changes: StorageChanges): void => {
   if (changes.isNotificationEnabled !== undefined) {
     isNotificationEnabled = changes.isNotificationEnabled;
   }
+  if (changes.ultraFocusMode !== undefined) {
+    ultraFocusMode = changes.ultraFocusMode;
+  }
 };
 
 chrome.storage.local.get(
@@ -62,6 +66,7 @@ chrome.storage.local.get(
     "soundVolume",
     "longBreak",
     "isNotificationEnabled",
+    "ultraFocusMode",
   ],
   (result) => updateVariables(result as StorageChanges)
 );
@@ -129,7 +134,15 @@ const startTimer = (): void => {
     time -= 1000;
 
     if (time <= 0) {
-      handleTimeEnds();
+      if (ultraFocusMode) {
+        chrome.storage.local.set({ isRunning: false });
+        createNotification({
+          title: "Session ended! 🎉",
+          message: "You have completed your ultra focus session!",
+        });
+      } else {
+        handleTimeEnds();
+      }
     } else {
       chrome.storage.local.set({ time });
     }
@@ -138,8 +151,9 @@ const startTimer = (): void => {
   }, 1000);
 };
 
+// note: this function must not be called multiple times. use chrome.storage.local.set({ isRunning: false }) instead
 const stopTimer = async (): Promise<void> => {
-  if (pomodoroCount >= 1) {
+  if (pomodoroCount >= 1 || ultraFocusMode) {
     recordPomodoroHistory();
   }
 
@@ -228,6 +242,9 @@ const playSound = (): void => {
 
 //*************** Pomodoro history *******************/
 const recordPomodoroHistory = (): void => {
+  // If ultraFocusMode is enabled, only one pomodoro is recorded per session
+  pomodoroCount = ultraFocusMode ? 1 : pomodoroCount;
+
   chrome.storage.local.get("pomodoroHistory", (result) => {
     const history: PomodoroHistory[] = result.pomodoroHistory || [];
     const newData = {
