@@ -37,8 +37,21 @@ const SettingsPage = () => {
         {currentSection === "Timer Settings" && <TimerSettings />}
         {currentSection === "Sounds and Notifications" && (
           <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-full h-px bg-border"></div>
+              <div className="text-zinc-400 text-xs text-nowrap">
+                Customize Sound
+              </div>
+              <div className="w-full h-px bg-border"></div>
+            </div>
             <SoundSettings />
-            <div className="w-full h-px bg-border"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-full h-px bg-border"></div>
+              <div className="text-zinc-400 text-xs text-nowrap">
+                Notification Control
+              </div>
+              <div className="w-full h-px bg-border"></div>
+            </div>
             <NotificationSettings />
           </div>
         )}

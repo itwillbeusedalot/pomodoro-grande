@@ -19,9 +19,9 @@ const NotificationSettings = () => {
 
   return (
     <div className="w-full space-y-2">
-      <h1 className="text-base text-center font-semibold ">
+      {/* <h1 className="text-base text-center font-semibold ">
         Notification Settings
-      </h1>
+      </h1> */}
 
       <div className="flex items-center justify-between">
         <p>Enable Notification</p>
