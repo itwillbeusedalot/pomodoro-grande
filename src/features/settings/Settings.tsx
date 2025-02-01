@@ -99,7 +99,7 @@ const SettingsPage = () => {
           icon={<Bug className="size-5" />}
           title="Report an Issue"
           subtitle="Found a bug? Report it here"
-          url="https://x.com/BulletLang"
+          url="https://github.com/BulletOnli/pomodoro-grande/issues"
           rightIcon={<ExternalLink className="w-4 h-4" />}
           external
         />
