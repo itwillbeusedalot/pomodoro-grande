@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Pomodoro Grande",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Combines the classic Pomodoro Technique with essential productivity tools to help you stay on track.",
   "icons": {
     "16": "assets/images/icon16.png",

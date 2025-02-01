@@ -46,14 +46,11 @@ const PomodoroTimer = () => {
   }, []);
 
   const startTimer = () => {
-    chrome.storage.local.set({ isRunning: true, isBreak: false });
+    chrome.runtime.sendMessage({ type: "start-timer" });
   };
 
   const stopTimer = () => {
-    chrome.storage.local.set({
-      isRunning: false,
-      isBreak: false,
-    });
+    chrome.runtime.sendMessage({ type: "stop-timer" });
   };
 
   const skipTimer = debounce(() => {

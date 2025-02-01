@@ -87,19 +87,21 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === "start-timer") {
+    startTimer();
+  }
+
+  if (message.type === "stop-timer") {
+    stopTimer();
+  }
+});
+
 chrome.storage.onChanged.addListener((changes) => {
   const newChanges: StorageChanges = Object.fromEntries(
     Object.entries(changes).map(([key, value]) => [key, value.newValue])
   );
   updateVariables(newChanges);
-
-  if (changes.isRunning) {
-    if (newChanges.isRunning) {
-      startTimer();
-    } else {
-      stopTimer();
-    }
-  }
 
   // If the user completes a todo while the timer is running
   if (changes.todos && newChanges.todos && isRunning) {
@@ -124,6 +126,9 @@ chrome.storage.onChanged.addListener((changes) => {
 const startTimer = (): void => {
   clearInterval(interval);
   blockAllSites();
+  isRunning = true;
+  isBreak = false;
+  chrome.storage.local.set({ isRunning, isBreak });
 
   chrome.storage.local.get("todos", (result) => {
     todosStateAtStart = result.todos || [];
@@ -134,15 +139,7 @@ const startTimer = (): void => {
     time -= 1000;
 
     if (time <= 0) {
-      if (ultraFocusMode) {
-        chrome.storage.local.set({ isRunning: false });
-        createNotification({
-          title: "Session ended! 🎉",
-          message: "You have completed your ultra focus session!",
-        });
-      } else {
-        handleTimeEnds();
-      }
+      handleTimeEnds();
     } else {
       chrome.storage.local.set({ time });
     }
@@ -151,7 +148,6 @@ const startTimer = (): void => {
   }, 1000);
 };
 
-// note: this function must not be called multiple times. use chrome.storage.local.set({ isRunning: false }) instead
 const stopTimer = async (): Promise<void> => {
   if (pomodoroCount >= 1 || ultraFocusMode) {
     recordPomodoroHistory();
@@ -175,6 +171,21 @@ const handleTimeEnds = (): void => {
     playSound();
   }
 
+  if (ultraFocusMode) {
+    pomodoroCount++;
+    stopTimer();
+    createNotification({
+      title: "Session ended! 🎉",
+      message: "You have completed your ultra focus session!",
+    });
+
+    return;
+  }
+
+  /**
+  If the timer ends, we need to check if it was a break or work session
+  If it was a work session, we need to increment the POMODORO COUNT
+  */
   pomodoroCount = isBreak ? pomodoroCount : pomodoroCount + 1;
   isBreak = !isBreak;
 
@@ -242,8 +253,15 @@ const playSound = (): void => {
 
 //*************** Pomodoro history *******************/
 const recordPomodoroHistory = (): void => {
-  // If ultraFocusMode is enabled, only one pomodoro is recorded per session
-  pomodoroCount = ultraFocusMode ? 1 : pomodoroCount;
+  /**
+    * If ultraFocusMode is enabled, calculate the total milliseconds spent on the session (no need to finish the timer)
+      Otherwise, calculate the total milliseconds spent on all completed pomodoros
+    */
+  const totalMilliseconds = ultraFocusMode
+    ? WORK_TIME - time
+    : pomodoroCount * WORK_TIME;
+
+  const totalWorkTime = totalMilliseconds / 1000 / 60;
 
   chrome.storage.local.get("pomodoroHistory", (result) => {
     const history: PomodoroHistory[] = result.pomodoroHistory || [];
@@ -251,7 +269,7 @@ const recordPomodoroHistory = (): void => {
       createdAt: new Date().toLocaleString(),
       totalPomodoros: pomodoroCount,
       completedTodos: completedTodos.length,
-      totalWorkTime: (pomodoroCount * WORK_TIME) / 1000 / 60,
+      totalWorkTime,
     };
 
     const aggregatedHistory: PomodoroHistory[] = Object.values(

@@ -128,7 +128,7 @@ const AnalyticsTab = () => {
 
     return (
       <text x={x + width / 2} y={y} fill="#666" textAnchor="middle" dy={-6}>
-        {value} {labelSuffix}
+        {value.toFixed(2).replace(/\.00$/, "")} {labelSuffix}
       </text>
     );
   };
@@ -290,7 +290,8 @@ const AnalyticsTab = () => {
                         {labelMap[activeChart]}:
                       </div>
                       <p className="text-[10px] font-medium">
-                        {value} {suffix}
+                        {Number(value)?.toFixed(2).replace(/\.00$/, "")}{" "}
+                        {suffix}
                       </p>
                     </div>
                   );
