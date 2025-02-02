@@ -30,13 +30,16 @@ const PomodoroTimer = () => {
 
     syncState();
 
-    const handleStorageChange = (changes: any) => {
-      if (changes.time) setTime(changes.time.newValue);
-      if (changes.isRunning) setIsRunning(changes.isRunning.newValue);
-      if (changes.isBreak) setIsBreak(changes.isBreak.newValue);
-      if (changes.isLongBreak) setIsLongBreak(changes.isLongBreak.newValue);
-      if (changes.ultraFocusMode)
-        setUltraFocusMode(changes.ultraFocusMode.newValue);
+    const handleStorageChange = (changes: {
+      [key: string]: chrome.storage.StorageChange;
+    }) => {
+      Object.entries(changes).forEach(([key, { newValue }]) => {
+        if (key === "time") setTime(newValue ?? 0);
+        if (key === "isRunning") setIsRunning(newValue ?? false);
+        if (key === "isBreak") setIsBreak(newValue ?? false);
+        if (key === "isLongBreak") setIsLongBreak(newValue ?? false);
+        if (key === "ultraFocusMode") setUltraFocusMode(newValue ?? false);
+      });
     };
 
     chrome.storage.onChanged.addListener(handleStorageChange);
