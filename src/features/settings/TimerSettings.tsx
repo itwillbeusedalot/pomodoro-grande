@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
+import { useTimer } from "@/context/TimerContext";
 
 const DEFAULT_WORK_TIME = WORKING_OPTIONS[3];
 const DEFAULT_BREAK_TIME = BREAK_OPTIONS[1];
@@ -31,25 +32,20 @@ const DEFAULT_LONG_BREAK_TIME = LONG_BREAK_OPTIONS[1];
 const TimerSettings = () => {
   const [time, setTime] = useState(DEFAULT_WORK_TIME);
   const [breakTime, setBreakTime] = useState(DEFAULT_BREAK_TIME);
-  const [isRunning, setIsRunning] = useState(false);
   const [longBreak, setLongBreak] = useState(DEFAULT_LONG_BREAK_TIME);
-  const [ultraFocusMode, setUltraFocusMode] = useState(false);
+  const { isRunning, ultraFocusMode, setUltraFocusMode } = useTimer();
 
   useEffect(() => {
     const loadSettings = async () => {
       const data = await browser.storage.local.get([
         "breakTime",
-        "isRunning",
         "longBreak",
         "workTime",
-        "ultraFocusMode",
       ]);
 
       setTime(data?.workTime?.toString() ?? DEFAULT_WORK_TIME);
       setBreakTime(data?.breakTime?.toString() ?? DEFAULT_BREAK_TIME);
-      setIsRunning((data.isRunning as boolean) ?? false);
       setLongBreak(data?.longBreak?.toString() ?? DEFAULT_LONG_BREAK_TIME);
-      setUltraFocusMode((data?.ultraFocusMode as boolean) ?? false);
     };
 
     loadSettings();

@@ -4,28 +4,25 @@ import { useEffect, useState } from "react";
 import debounce from "@/utils/debounce";
 import TodoProgress from "../todos/TodoProgress";
 import { ONE_HOUR } from "@/constants";
+import { useTimer } from "@/context/TimerContext";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
-  const [isLongBreak, setIsLongBreak] = useState(false);
-  const [ultraFocusMode, setUltraFocusMode] = useState(false);
+  const {
+    isRunning,
+    setIsRunning,
+    isBreak,
+    isLongBreak,
+    setIsBreak,
+    setIsLongBreak,
+    setUltraFocusMode,
+    ultraFocusMode,
+  } = useTimer();
 
   useEffect(() => {
     const syncState = async () => {
-      const result = await chrome.storage.local.get([
-        "time",
-        "isRunning",
-        "isBreak",
-        "isLongBreak",
-        "ultraFocusMode",
-      ]);
+      const result = await chrome.storage.local.get(["time"]);
       setTime((result.time as number) ?? 0);
-      setIsRunning((result.isRunning as boolean) ?? false);
-      setIsBreak((result.isBreak as boolean) ?? false);
-      setIsLongBreak((result.isLongBreak as boolean) ?? false);
-      setUltraFocusMode((result.ultraFocusMode as boolean) ?? false);
     };
 
     syncState();

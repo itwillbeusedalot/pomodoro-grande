@@ -9,13 +9,14 @@ import {
 } from "@/components/ui/select";
 import debounce from "@/utils/debounce";
 import BackgroundMusics from "@/data/background-musics";
+import { useTimer } from "@/context/TimerContext";
 
 const BackgroundMusicSettings = () => {
-  const [isRunning, setIsRunning] = useState(false);
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [selectedMusic, setSelectedMusic] = useState(BackgroundMusics[0].value);
   const [musicVolume, setMusicVolume] = useState(0.5);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const { isRunning } = useTimer();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -80,12 +81,11 @@ const BackgroundMusicSettings = () => {
 
   useEffect(() => {
     chrome.storage.local
-      .get(["selectedMusic", "isMusicEnabled", "musicVolume", "isRunning"])
+      .get(["selectedMusic", "isMusicEnabled", "musicVolume"])
       .then((data) => {
         setSelectedMusic((data?.selectedMusic as string) ?? "clock.mp3");
         setIsMusicEnabled((data?.isMusicEnabled as boolean) ?? true);
         setMusicVolume((data?.musicVolume as number) ?? 0.5);
-        setIsRunning((data?.isRunning as boolean) ?? false);
       });
   }, []);
 
