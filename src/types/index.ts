@@ -19,6 +19,10 @@ export type StorageChanges = {
   soundVolume?: number;
   isNotificationEnabled?: boolean;
 
+  isMusicEnabled?: boolean;
+  selectedMusic?: string;
+  musicVolume?: number;
+
   blockedSites?: string[];
   allowedUrls?: string[];
   todos?: Todo[];

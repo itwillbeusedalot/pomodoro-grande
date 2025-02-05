@@ -9,9 +9,11 @@ import {
   Clock,
   ExternalLink,
   HandHeart,
+  Music,
   Star,
 } from "lucide-react";
 import { useState } from "react";
+import BackgroundMusicSettings from "./BackgroundMusicSettings";
 
 const SettingsPage = () => {
   const [currentSection, setCurrentSection] = useState<string | null>(null);
@@ -55,6 +57,7 @@ const SettingsPage = () => {
             <NotificationSettings />
           </div>
         )}
+        {currentSection === "Background Music" && <BackgroundMusicSettings />}
       </div>
     );
   }
@@ -75,8 +78,14 @@ const SettingsPage = () => {
         <MenuItem
           icon={<BellRing className="size-5" />}
           title="Sounds and Notifications"
-          subtitle="Customize your notification sounds"
+          subtitle="Customize your notifications"
           onClick={() => setCurrentSection("Sounds and Notifications")}
+        />
+        <MenuItem
+          icon={<Music className="size-5" />}
+          title="Background Music"
+          subtitle="Play music while you work"
+          onClick={() => setCurrentSection("Background Music")}
         />
       </div>
 

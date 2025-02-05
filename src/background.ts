@@ -1,3 +1,4 @@
+import backgroundMusics from "./data/background-musics";
 import { PomodoroHistory, StorageChanges, Todo } from "./types";
 import { updateBadge } from "./utils/badgeExtension";
 import { createNotification } from "./utils/notification";
@@ -29,6 +30,10 @@ let selectedSound = "clock.mp3";
 let isSoundEnabled = true;
 let soundVolume = 0.5;
 
+let selectedMusic = backgroundMusics[0].value;
+let isMusicEnabled = true;
+let musicVolume = 0.5;
+
 let isNotificationEnabled = true;
 
 let completedTodos: Todo[] = [];
@@ -53,6 +58,13 @@ const updateVariables = (changes: StorageChanges): void => {
   if (changes.ultraFocusMode !== undefined) {
     ultraFocusMode = changes.ultraFocusMode;
   }
+
+  // Music settings
+  if (changes.selectedMusic) selectedMusic = changes.selectedMusic;
+  if (changes.isMusicEnabled !== undefined) {
+    isMusicEnabled = changes.isMusicEnabled;
+  }
+  if (changes.musicVolume !== undefined) musicVolume = changes.musicVolume;
 };
 
 chrome.storage.local.get(
@@ -67,6 +79,9 @@ chrome.storage.local.get(
     "longBreak",
     "isNotificationEnabled",
     "ultraFocusMode",
+    "selectedMusic",
+    "isMusicEnabled",
+    "musicVolume",
   ],
   (result) => updateVariables(result as StorageChanges)
 );
@@ -90,10 +105,17 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "start-timer") {
     startTimer();
+    playMusic();
   }
 
   if (message.type === "stop-timer") {
     stopTimer();
+    chrome.runtime.sendMessage({
+      action: "stopMusic",
+      isMusicEnabled,
+      selectedMusic,
+      musicVolume,
+    });
   }
 });
 
@@ -188,6 +210,7 @@ const handleTimeEnds = (): void => {
   */
   pomodoroCount = isBreak ? pomodoroCount : pomodoroCount + 1;
   isBreak = !isBreak;
+  let isLongBreak = pomodoroCount % 4 === 0; // Every 4th pomodoro is a long break
 
   if (isBreak) {
     unBlockAllSites();
@@ -195,9 +218,9 @@ const handleTimeEnds = (): void => {
     blockAllSites();
   }
 
-  if (isBreak && pomodoroCount % 4 === 0) {
+  if (isBreak && isLongBreak) {
     time = LONG_BREAK_TIME;
-    chrome.storage.local.set({ isBreak, time, isLongBreak: true });
+    chrome.storage.local.set({ isBreak, time, isLongBreak });
 
     if (isNotificationEnabled) {
       createNotification({
@@ -207,7 +230,7 @@ const handleTimeEnds = (): void => {
     }
   } else {
     time = isBreak ? BREAK_TIME : WORK_TIME;
-    chrome.storage.local.set({ isBreak, time, isLongBreak: false });
+    chrome.storage.local.set({ isBreak, time, isLongBreak });
 
     if (isNotificationEnabled) {
       createNotification({
@@ -229,7 +252,7 @@ const ensureOffscreenDocument = (callback?: () => void): void => {
           url: chrome.runtime.getURL("offscreen.html"),
           // @ts-ignore
           reasons: ["AUDIO_PLAYBACK"],
-          justification: "Play notification sounds for timers",
+          justification: "Pomodoro Grande needs to play sounds",
         })
         .then(() => {
           if (callback) callback();
@@ -247,6 +270,17 @@ const playSound = (): void => {
       isSoundEnabled,
       selectedSound,
       soundVolume,
+    });
+  });
+};
+
+const playMusic = (): void => {
+  ensureOffscreenDocument(() => {
+    chrome.runtime.sendMessage({
+      action: "playMusic",
+      isMusicEnabled,
+      selectedMusic,
+      musicVolume,
     });
   });
 };
