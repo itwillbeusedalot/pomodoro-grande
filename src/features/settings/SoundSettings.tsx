@@ -9,21 +9,11 @@ import {
 } from "@/components/ui/select";
 import debounce from "@/utils/debounce";
 import browser from "webextension-polyfill";
-
-const sounds = [
-  { value: "clock.mp3", label: "Alarm" },
-  { value: "clock2.mp3", label: "Alarm 2" },
-  { value: "clock3.mp3", label: "Alarm 3" },
-  { value: "iphone.mp3", label: "Iphone" },
-  { value: "radar.mp3", label: "Radar" },
-  { value: "butterfly.mp3", label: "Butterfly" },
-  { value: "GTA.mp3", label: "GTA" },
-  { value: "tada.mp3", label: "Tada" },
-];
+import sounds from "@/data/sounds";
 
 const SoundSettings = () => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const [selectedSound, setSelectedSound] = useState("clock.mp3");
+  const [selectedSound, setSelectedSound] = useState(sounds[0].value);
   const [soundVolume, setSoundVolume] = useState(0.5);
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
 
@@ -47,9 +37,7 @@ const SoundSettings = () => {
 
   const handlePlay = () => {
     setIsSoundPlaying(false);
-    const sound = new Audio(
-      chrome.runtime.getURL(`assets/sounds/${selectedSound}`)
-    );
+    const sound = new Audio(selectedSound);
     sound.volume = soundVolume;
     sound.play();
 

@@ -1,4 +1,5 @@
 import backgroundMusics from "./data/background-musics";
+import sounds from "./data/sounds";
 import { PomodoroHistory, StorageChanges, Todo } from "./types";
 import { updateBadge } from "./utils/badgeExtension";
 import { createNotification } from "./utils/notification";
@@ -26,7 +27,7 @@ let interval: NodeJS.Timeout | undefined;
 let time = WORK_TIME;
 let pomodoroCount = 0; // 1 Work = 1 Pomodoro
 
-let selectedSound = "clock.mp3";
+let selectedSound = sounds[0].value;
 let isSoundEnabled = true;
 let soundVolume = 0.5;
 

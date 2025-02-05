@@ -71,9 +71,7 @@ const handlePlaySound = (request: SoundRequest) => {
     isSoundPlaying = false;
   }
 
-  soundAudio = new Audio(
-    chrome.runtime.getURL(`assets/sounds/${request.selectedSound}`)
-  );
+  soundAudio = new Audio(request.selectedSound);
 
   if (request?.soundVolume !== undefined) {
     soundAudio.volume = request.soundVolume;
