@@ -111,12 +111,7 @@ chrome.runtime.onMessage.addListener((message) => {
 
   if (message.type === "stop-timer") {
     stopTimer();
-    chrome.runtime.sendMessage({
-      action: "stopMusic",
-      isMusicEnabled,
-      selectedMusic,
-      musicVolume,
-    });
+    stopMusic();
   }
 });
 
@@ -215,13 +210,19 @@ const handleTimeEnds = (): void => {
 
   if (isBreak) {
     unBlockAllSites();
+    chrome.runtime.sendMessage({
+      action: "stopMusic",
+      isMusicEnabled,
+      selectedMusic,
+      musicVolume,
+    });
   } else {
     blockAllSites();
+    playMusic();
   }
 
   if (isBreak && isLongBreak) {
     time = LONG_BREAK_TIME;
-    chrome.storage.local.set({ isBreak, time, isLongBreak });
 
     if (isNotificationEnabled) {
       createNotification({
@@ -231,7 +232,6 @@ const handleTimeEnds = (): void => {
     }
   } else {
     time = isBreak ? BREAK_TIME : WORK_TIME;
-    chrome.storage.local.set({ isBreak, time, isLongBreak });
 
     if (isNotificationEnabled) {
       createNotification({
@@ -283,6 +283,15 @@ const playMusic = (): void => {
       selectedMusic,
       musicVolume,
     });
+  });
+};
+
+const stopMusic = () => {
+  chrome.runtime.sendMessage({
+    action: "stopMusic",
+    isMusicEnabled,
+    selectedMusic,
+    musicVolume,
   });
 };
 

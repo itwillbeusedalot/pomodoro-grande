@@ -102,12 +102,9 @@ const handlePlayMusic = (request: SoundRequest) => {
     musicAudio.volume = request.musicVolume;
   }
 
-  musicAudio
-    .play()
-
-    .catch((error: Error) => {
-      console.error("Error playing audio:", error);
-    });
+  musicAudio.play().catch((error: Error) => {
+    console.error("Error playing audio:", error);
+  });
 };
 
 const handleStopMusic = () => {

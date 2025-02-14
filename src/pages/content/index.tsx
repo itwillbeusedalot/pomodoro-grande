@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import "./content.css";
 import { isBlockedSite } from "@/utils/sites";
 import { StorageChanges } from "@/types";
-import { useTimer } from "@/context/TimerContext";
 
 const createFocusOverlay = (): void => {
   let overlay = document.getElementById("focus-overlay");
@@ -52,7 +51,8 @@ const removeFocusOverlay = (): void => {
 };
 
 const Content: React.FC = () => {
-  const { isBreak, isRunning, setIsBreak, setIsRunning } = useTimer();
+  const [isRunning, setIsRunning] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
   const [allowedUrls, setAllowedUrls] = useState<string[]>([]);
 
@@ -75,9 +75,13 @@ const Content: React.FC = () => {
   useEffect(() => {
     const fetchStorageData = async () => {
       const result: StorageChanges = await chrome.storage.local.get([
+        "isRunning",
+        "isBreak",
         "blockedSites",
         "allowedUrls",
       ]);
+      setIsRunning(result.isRunning ?? false);
+      setIsBreak(result.isBreak ?? false);
       setBlockedSites(result.blockedSites ?? []);
       setAllowedUrls(result.allowedUrls ?? []);
     };
