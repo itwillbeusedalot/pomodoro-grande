@@ -12,7 +12,7 @@ import BackgroundMusics from "@/data/background-musics";
 import { useTimer } from "@/context/TimerContext";
 
 const BackgroundMusicSettings = () => {
-  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [selectedMusic, setSelectedMusic] = useState(BackgroundMusics[0].value);
   const [musicVolume, setMusicVolume] = useState(0.5);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
@@ -104,17 +104,18 @@ const BackgroundMusicSettings = () => {
   }, [selectedMusic, musicVolume, isMusicPlaying]);
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <p>Enable Music</p>
         <Switch
           className={`data-[state=checked]:bg-primary-custom`}
           checked={isMusicEnabled}
           onCheckedChange={handleEnableSound}
+          disabled
         />
       </div>
 
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center justify-between">
         <p>Select Music</p>
         <Select
           value={selectedMusic}
@@ -140,7 +141,7 @@ const BackgroundMusicSettings = () => {
         </p>
       )}
 
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center justify-between">
         <p>Volume</p>
         <div className="flex items-center gap-2">
           <input
@@ -151,10 +152,15 @@ const BackgroundMusicSettings = () => {
             max="1"
             step="0.1"
             className="accent-primary-custom"
+            disabled
           />
           <p className="text-xs w-5">{musicVolume * 100}</p>
         </div>
       </div>
+
+      <p className="text-xs text-center mx-auto mt-4 text-red-500">
+        Background music soon to be added
+      </p>
     </div>
   );
 };

@@ -106,12 +106,12 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "start-timer") {
     startTimer();
-    playMusic();
+    // playMusic();
   }
 
   if (message.type === "stop-timer") {
     stopTimer();
-    stopMusic();
+    // stopMusic();
   }
 });
 
