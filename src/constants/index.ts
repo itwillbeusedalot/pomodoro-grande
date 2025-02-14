@@ -17,3 +17,6 @@ export const LONG_BREAK_OPTIONS = [1, 15, 20, 25, 30].map((option) =>
 export const ULTRA_FOCUS_MODE_OPTIONS = [1, 25, 60, 120, 180, 240, 300].map(
   (option) => (option * ONE_MINUTE).toString()
 );
+
+export const REVIEW_PAGE =
+  "https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof/reviews";

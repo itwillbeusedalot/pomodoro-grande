@@ -10,7 +10,7 @@ import AnalyticsTab from "./features/analytics/AnalyticsTab";
 
 const DEFAULT_TAB_SIZE = {
   width: "w-80",
-  height: "h-[350px]",
+  height: "h-[400px]",
 };
 
 const App = () => {

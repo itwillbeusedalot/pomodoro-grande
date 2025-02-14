@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import BackgroundMusicSettings from "./BackgroundMusicSettings";
+import { REVIEW_PAGE } from "@/constants";
 
 const SettingsPage = () => {
   const [currentSection, setCurrentSection] = useState<string | null>(null);
@@ -100,7 +101,7 @@ const SettingsPage = () => {
           icon={<Star className="size-5" />}
           title="Leave a Review"
           subtitle="Help us improve by leaving a review"
-          url="https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof/reviews"
+          url={REVIEW_PAGE}
           rightIcon={<ExternalLink className="w-4 h-4" />}
           external
         />

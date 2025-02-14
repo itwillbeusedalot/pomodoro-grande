@@ -5,6 +5,7 @@ import debounce from "@/utils/debounce";
 import TodoProgress from "../todos/TodoProgress";
 import { ONE_HOUR } from "@/constants";
 import { useTimer } from "@/context/TimerContext";
+import LeaveAReviewPopup from "@/components/LeaveAReviewPopup";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
@@ -94,7 +95,6 @@ const PomodoroTimer = () => {
           {isRunning && isBreak && isLongBreak && "Long Break! ✨"}
         </h1>
       </div>
-
       <div className="flex flex-wrap justify-center items-center gap-2">
         {isRunning ? (
           <>
@@ -127,8 +127,9 @@ const PomodoroTimer = () => {
           </Button>
         )}
       </div>
-
       {isRunning && <TodoProgress />}
+
+      <LeaveAReviewPopup />
     </TabsContent>
   );
 };
