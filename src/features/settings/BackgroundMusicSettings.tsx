@@ -84,7 +84,7 @@ const BackgroundMusicSettings = () => {
       .get(["selectedMusic", "isMusicEnabled", "musicVolume"])
       .then((data) => {
         setSelectedMusic((data?.selectedMusic as string) ?? "clock.mp3");
-        setIsMusicEnabled((data?.isMusicEnabled as boolean) ?? true);
+        setIsMusicEnabled((data?.isMusicEnabled as boolean) ?? false);
         setMusicVolume((data?.musicVolume as number) ?? 0.5);
       });
   }, []);
