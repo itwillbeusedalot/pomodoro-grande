@@ -32,7 +32,7 @@ let isSoundEnabled = true;
 let soundVolume = 0.5;
 
 let selectedMusic = backgroundMusics[0].value;
-let isMusicEnabled = true;
+let isMusicEnabled = false;
 let musicVolume = 0.5;
 
 let isNotificationEnabled = true;

@@ -120,7 +120,8 @@ const BackgroundMusicSettings = () => {
         <Select
           value={selectedMusic}
           onValueChange={handleSoundChange}
-          disabled={!isMusicEnabled || isRunning}
+          // disabled={!isMusicEnabled || isRunning}
+          disabled
         >
           <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select a sound" />
