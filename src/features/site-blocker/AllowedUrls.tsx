@@ -1,7 +1,6 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import browser from "webextension-polyfill";
 import { getAllowedUrls } from "@/utils/sites";
 
 const AllowedUrls = () => {
@@ -22,7 +21,7 @@ const AllowedUrls = () => {
       setAllowedUrls([newUrl, ...allowedUrls]);
       setNewUrl("");
       setError("");
-      browser.storage.local.set({ allowedUrls: [newUrl, ...allowedUrls] });
+      chrome.storage.local.set({ allowedUrls: [newUrl, ...allowedUrls] });
     } else if (allowedUrls.includes(newUrl)) {
       setError("This url is already in the list.");
     }
@@ -31,7 +30,7 @@ const AllowedUrls = () => {
   const removeSite = (siteToRemove: string) => {
     const updatedUrls = allowedUrls.filter((site) => site !== siteToRemove);
     setAllowedUrls(updatedUrls);
-    browser.storage.local.set({ allowedUrls: updatedUrls });
+    chrome.storage.local.set({ allowedUrls: updatedUrls });
   };
 
   return (

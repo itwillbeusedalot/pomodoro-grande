@@ -1,17 +1,16 @@
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
-import browser from "webextension-polyfill";
 
 const NotificationSettings = () => {
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
 
   const handleEnableNotication = (value: boolean) => {
     setIsNotificationEnabled(value);
-    browser.storage.local.set({ isNotificationEnabled: value });
+    chrome.storage.local.set({ isNotificationEnabled: value });
   };
 
   useEffect(() => {
-    const result = browser.storage.local.get("isNotificationEnabled");
+    const result = chrome.storage.local.get("isNotificationEnabled");
     result.then((data) => {
       setIsNotificationEnabled((data.isNotificationEnabled as boolean) ?? true);
     });

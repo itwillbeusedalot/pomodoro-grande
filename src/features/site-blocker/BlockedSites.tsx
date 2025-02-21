@@ -1,7 +1,6 @@
 import { useState, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import browser from "webextension-polyfill";
 import { getBlockedSites } from "@/utils/sites";
 
 const BlockedSites = () => {
@@ -31,7 +30,7 @@ const BlockedSites = () => {
       setSites([domain, ...sites]);
       setNewSite("");
       setError("");
-      browser.storage.local.set({ blockedSites: [domain, ...sites] });
+      chrome.storage.local.set({ blockedSites: [domain, ...sites] });
     } else if (sites.includes(domain)) {
       setError("This domain is already in the list.");
     }
@@ -40,7 +39,7 @@ const BlockedSites = () => {
   const removeSite = (siteToRemove: string) => {
     const updatedSites = sites.filter((site) => site !== siteToRemove);
     setSites(updatedSites);
-    browser.storage.local.set({ blockedSites: updatedSites });
+    chrome.storage.local.set({ blockedSites: updatedSites });
   };
 
   return (
