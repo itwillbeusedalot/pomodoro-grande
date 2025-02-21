@@ -105,13 +105,11 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "start-timer") {
-    startTimer();
-    // playMusic();
+    startTimer().catch(console.error);
   }
 
   if (message.type === "stop-timer") {
-    stopTimer();
-    // stopMusic();
+    stopTimer().catch(console.error);
   }
 });
 
@@ -141,12 +139,15 @@ chrome.storage.onChanged.addListener((changes) => {
   }
 });
 
-const startTimer = (): void => {
+const startTimer = async (): Promise<void> => {
   clearInterval(interval);
   blockAllSites();
   isRunning = true;
   isBreak = false;
   chrome.storage.local.set({ isRunning, isBreak });
+
+  // Start playing music if enabled
+  await playMusic();
 
   chrome.storage.local.get("todos", (result) => {
     todosStateAtStart = result.todos || [];
@@ -175,6 +176,10 @@ const stopTimer = async (): Promise<void> => {
   time = WORK_TIME;
   isRunning = false;
   isBreak = false;
+
+  // Stop music when timer stops
+  stopMusic();
+
   await chrome.storage.local.set({ isRunning, time, isBreak });
 
   completedTodos = [];
@@ -184,41 +189,31 @@ const stopTimer = async (): Promise<void> => {
   unBlockAllSites();
 };
 
-const handleTimeEnds = (): void => {
+const handleTimeEnds = async (): Promise<void> => {
   if (selectedSound && isSoundEnabled) {
-    playSound();
+    await playSound();
   }
 
   if (ultraFocusMode) {
     pomodoroCount++;
-    stopTimer();
+    await stopTimer();
     createNotification({
       title: "Session ended! 🎉",
       message: "You have completed your ultra focus session!",
     });
-
     return;
   }
 
-  /**
-  If the timer ends, we need to check if it was a break or work session
-  If it was a work session, we need to increment the POMODORO COUNT
-  */
   pomodoroCount = isBreak ? pomodoroCount : pomodoroCount + 1;
   isBreak = !isBreak;
-  let isLongBreak = pomodoroCount % 4 === 0; // Every 4th pomodoro is a long break
+  let isLongBreak = pomodoroCount % 4 === 0;
 
   if (isBreak) {
     unBlockAllSites();
-    chrome.runtime.sendMessage({
-      action: "stopMusic",
-      isMusicEnabled,
-      selectedMusic,
-      musicVolume,
-    });
+    stopMusic();
   } else {
     blockAllSites();
-    playMusic();
+    await playMusic();
   }
 
   if (isBreak && isLongBreak) {
@@ -241,48 +236,46 @@ const handleTimeEnds = (): void => {
     }
   }
 
+  chrome.storage.local.set({ isBreak, time, isLongBreak });
   const badgeColor = isBreak ? "#ffccd5" : "#40A662";
   chrome.action.setBadgeBackgroundColor({ color: badgeColor });
 };
 
-const ensureOffscreenDocument = (callback?: () => void): void => {
-  chrome.offscreen.hasDocument().then((hasDocument) => {
+const ensureOffscreenDocument = async (): Promise<void> => {
+  try {
+    const hasDocument = await chrome.offscreen.hasDocument();
     if (!hasDocument) {
-      chrome.offscreen
-        .createDocument({
-          url: chrome.runtime.getURL("offscreen.html"),
-          // @ts-ignore
-          reasons: ["AUDIO_PLAYBACK"],
-          justification: "Pomodoro Grande needs to play sounds",
-        })
-        .then(() => {
-          if (callback) callback();
-        });
-    } else {
-      if (callback) callback();
+      await chrome.offscreen.createDocument({
+        url: chrome.runtime.getURL("offscreen.html"),
+        // @ts-ignore
+        reasons: ["AUDIO_PLAYBACK"],
+        justification: "Pomodoro Grande needs to play sounds",
+      });
     }
+  } catch (error) {
+    console.error("Error managing offscreen document:", error);
+  }
+};
+
+const playSound = async (): Promise<void> => {
+  await ensureOffscreenDocument();
+  chrome.runtime.sendMessage({
+    action: "playSound",
+    isSoundEnabled,
+    selectedSound,
+    soundVolume,
   });
 };
 
-const playSound = (): void => {
-  ensureOffscreenDocument(() => {
-    chrome.runtime.sendMessage({
-      action: "playSound",
-      isSoundEnabled,
-      selectedSound,
-      soundVolume,
-    });
-  });
-};
+const playMusic = async (): Promise<void> => {
+  if (!isMusicEnabled || !selectedMusic) return;
 
-const playMusic = (): void => {
-  ensureOffscreenDocument(() => {
-    chrome.runtime.sendMessage({
-      action: "playMusic",
-      isMusicEnabled,
-      selectedMusic,
-      musicVolume,
-    });
+  await ensureOffscreenDocument();
+  chrome.runtime.sendMessage({
+    action: "playMusic",
+    isMusicEnabled,
+    selectedMusic,
+    musicVolume,
   });
 };
 
