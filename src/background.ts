@@ -241,6 +241,7 @@ const handleTimeEnds = (): void => {
     }
   }
 
+  chrome.storage.local.set({ isBreak, time, isLongBreak });
   const badgeColor = isBreak ? "#ffccd5" : "#40A662";
   chrome.action.setBadgeBackgroundColor({ color: badgeColor });
 };
