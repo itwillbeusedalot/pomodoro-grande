@@ -60,6 +60,11 @@ chrome.runtime.onMessage.addListener((request: SoundRequest) => {
       musicAudio?.pause();
     }
   }
+
+  // Handle music selection change
+  if (request.action === "music-changed" && request.selectedMusic) {
+    handlePlayMusic(request).catch(console.error);
+  }
 });
 
 // ***************** Notification Sound ***************
@@ -108,7 +113,10 @@ const handlePlayMusic = async (request: SoundRequest) => {
       musicAudio.volume = request.musicVolume;
     }
 
-    await musicAudio.play();
+    // Only play if timer is running or it's a new music selection
+    if (request.isRunning || request.action === "playMusic") {
+      await musicAudio.play();
+    }
   } catch (error) {
     console.error("Error playing background music:", error);
     handleStopMusic();

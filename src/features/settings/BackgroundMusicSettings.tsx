@@ -15,7 +15,7 @@ const BackgroundMusicSettings = () => {
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [selectedMusic, setSelectedMusic] = useState(BackgroundMusics[0].value);
   const [musicVolume, setMusicVolume] = useState(0.5);
-  const { isRunning } = useTimer();
+  const { isRunning, isBreak } = useTimer();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -37,6 +37,17 @@ const BackgroundMusicSettings = () => {
   const handleSoundChange = (value: string) => {
     setSelectedMusic(value);
     chrome.storage.local.set({ selectedMusic: value });
+
+    // Send message to change music immediately if enabled
+    if (isMusicEnabled && !isBreak) {
+      chrome.runtime.sendMessage({
+        action: "music-changed",
+        selectedMusic: value,
+        isMusicEnabled,
+        musicVolume,
+        isRunning,
+      });
+    }
   };
 
   const handlePlay = () => {
@@ -87,7 +98,7 @@ const BackgroundMusicSettings = () => {
       handleStop();
     }
 
-    if (isMusicEnabled) {
+    if (selectedMusic && isMusicEnabled && !isRunning) {
       handlePlay();
     }
 
@@ -112,7 +123,7 @@ const BackgroundMusicSettings = () => {
         <Select
           value={selectedMusic}
           onValueChange={handleSoundChange}
-          disabled={!isMusicEnabled || isRunning}
+          disabled={!isMusicEnabled}
         >
           <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select a sound" />
@@ -126,12 +137,6 @@ const BackgroundMusicSettings = () => {
           </SelectContent>
         </Select>
       </div>
-
-      {isRunning && (
-        <p className="text-[10px] text-center mx-auto text-red-500">
-          Music cannot be changed while timer is running
-        </p>
-      )}
 
       <div className="flex items-center justify-between">
         <p>Volume</p>

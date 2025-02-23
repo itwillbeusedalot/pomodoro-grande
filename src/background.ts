@@ -213,7 +213,9 @@ export const handleTimeEnds = async (): Promise<void> => {
     stopMusic();
   } else {
     blockAllSites();
-    await playMusic();
+    if (isMusicEnabled) {
+      await playMusic();
+    }
   }
 
   if (isBreak && isLongBreak) {
@@ -276,6 +278,7 @@ const playMusic = async (): Promise<void> => {
     isMusicEnabled,
     selectedMusic,
     musicVolume,
+    isRunning,
   });
 };
 
