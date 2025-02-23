@@ -15,6 +15,26 @@ export const mockChrome = {
   },
   runtime: {
     sendMessage: vi.fn(),
+    onMessage: { addListener: vi.fn() },
+    onStartup: { addListener: vi.fn() },
+    onInstalled: { addListener: vi.fn() },
+    getURL: vi.fn(),
+  },
+  action: {
+    setBadgeBackgroundColor: vi.fn(),
+    setBadgeText: vi.fn(),
+  },
+  offscreen: {
+    hasDocument: vi.fn(),
+    createDocument: vi.fn(),
+  },
+  notifications: {
+    create: vi.fn(),
+    clear: vi.fn(),
+  },
+  declarativeNetRequest: {
+    updateDynamicRules: vi.fn(),
+    getDynamicRules: vi.fn(),
   },
 };
 

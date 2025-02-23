@@ -189,7 +189,7 @@ const stopTimer = async (): Promise<void> => {
   unBlockAllSites();
 };
 
-const handleTimeEnds = async (): Promise<void> => {
+export const handleTimeEnds = async (): Promise<void> => {
   if (selectedSound && isSoundEnabled) {
     await playSound();
   }
@@ -289,7 +289,7 @@ const stopMusic = () => {
 };
 
 //*************** Pomodoro history *******************/
-const recordPomodoroHistory = (): void => {
+export const recordPomodoroHistory = (): void => {
   /**
     * If ultraFocusMode is enabled, calculate the total milliseconds spent on the session (no need to finish the timer)
       Otherwise, calculate the total milliseconds spent on all completed pomodoros
