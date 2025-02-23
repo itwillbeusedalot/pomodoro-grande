@@ -92,7 +92,7 @@ const SettingsPage = () => {
 
       <div className="flex items-center gap-2">
         <div className="w-full h-px bg-border"></div>
-        <div className="text-zinc-400 text-nowrap">Feedback</div>
+        <div className="text-zinc-400 text-xs text-nowrap">Feedback</div>
         <div className="w-full h-px bg-border"></div>
       </div>
 
