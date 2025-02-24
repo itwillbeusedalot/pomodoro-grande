@@ -12,7 +12,7 @@ import BackgroundMusics from "@/data/background-musics";
 import { useTimer } from "@/context/TimerContext";
 
 const BackgroundMusicSettings = () => {
-  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [selectedMusic, setSelectedMusic] = useState(BackgroundMusics[0].value);
   const [musicVolume, setMusicVolume] = useState(0.5);
   const { isRunning, isBreak } = useTimer();
@@ -88,7 +88,7 @@ const BackgroundMusicSettings = () => {
         setSelectedMusic(
           (data?.selectedMusic as string) ?? BackgroundMusics[0].value
         );
-        setIsMusicEnabled((data?.isMusicEnabled as boolean) ?? false);
+        setIsMusicEnabled((data?.isMusicEnabled as boolean) ?? true);
         setMusicVolume((data?.musicVolume as number) ?? 0.5);
       });
   }, []);
