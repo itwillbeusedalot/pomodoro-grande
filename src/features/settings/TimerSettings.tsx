@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import browser from "webextension-polyfill";
 import { CircleHelp } from "lucide-react";
 import {
   Tooltip,
@@ -37,7 +36,7 @@ const TimerSettings = () => {
 
   useEffect(() => {
     const loadSettings = async () => {
-      const data = await browser.storage.local.get([
+      const data = await chrome.storage.local.get([
         "breakTime",
         "longBreak",
         "workTime",
@@ -53,7 +52,7 @@ const TimerSettings = () => {
 
   const handleWorkTimeChange = (value: string) => {
     setTime(value);
-    browser.storage.local.set({
+    chrome.storage.local.set({
       time: parseInt(value),
       workTime: parseInt(value),
     });
@@ -61,21 +60,21 @@ const TimerSettings = () => {
 
   const handleBreakTimeChange = (value: string) => {
     setBreakTime(value);
-    browser.storage.local.set({ breakTime: parseInt(value) });
+    chrome.storage.local.set({ breakTime: parseInt(value) });
   };
 
   const handleLongBreakChange = (value: string) => {
     setLongBreak(value);
-    browser.storage.local.set({ longBreak: parseInt(value) });
+    chrome.storage.local.set({ longBreak: parseInt(value) });
   };
 
   const handleUltraFocusMode = (value: boolean) => {
     setUltraFocusMode(value);
     if (value) {
-      browser.storage.local.set({ ultraFocusMode: value });
+      chrome.storage.local.set({ ultraFocusMode: value });
     } else {
       setTime(DEFAULT_WORK_TIME);
-      browser.storage.local.set({
+      chrome.storage.local.set({
         ultraFocusMode: value,
         time: parseInt(DEFAULT_WORK_TIME),
         workTime: parseInt(DEFAULT_WORK_TIME),

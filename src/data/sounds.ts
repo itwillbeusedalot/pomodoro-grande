@@ -1,10 +1,5 @@
 export default [
   {
-    label: "Butterfly",
-    value:
-      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1738746735/pomodoro%20grande/butterfly.mp3",
-  },
-  {
     label: "Clock",
     value:
       "https://res.cloudinary.com/dar5mfo5u/video/upload/v1738746820/pomodoro%20grande/clock.mp3",
@@ -18,6 +13,11 @@ export default [
     label: "Clock 3",
     value:
       "https://res.cloudinary.com/dar5mfo5u/video/upload/v1738746839/pomodoro%20grande/clock3.mp3",
+  },
+  {
+    label: "Butterfly",
+    value:
+      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1738746735/pomodoro%20grande/butterfly.mp3",
   },
   {
     label: "GTA",

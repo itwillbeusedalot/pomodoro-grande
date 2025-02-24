@@ -8,10 +8,8 @@ const LeaveAReviewPopup = () => {
     chrome.storage.local.get(
       ["reviewPopupClosed", "pomodoroHistory"],
       (result) => {
-        if (result?.pomodoroHistory?.length > 1) {
-          if (!result.reviewPopupClosed) {
-            setIsClosed(false);
-          }
+        if (result?.pomodoroHistory?.length > 1 && !result.reviewPopupClosed) {
+          setIsClosed(false);
         }
       }
     );
@@ -37,8 +35,12 @@ const LeaveAReviewPopup = () => {
           Share a quick review 😊
         </a>
       </p>
-      <button onClick={handleClose} className="text-xs">
-        ✖
+      <button
+        onClick={handleClose}
+        className="text-xs"
+        data-testid="close-review-popup"
+      >
+        X
       </button>
     </div>
   );

@@ -34,7 +34,7 @@ chrome.runtime.onMessage.addListener((request: SoundRequest) => {
     request?.selectedMusic &&
     request?.isMusicEnabled
   ) {
-    handlePlayMusic(request);
+    handlePlayMusic(request).catch(console.error);
   }
 
   // Stop background music
@@ -59,6 +59,11 @@ chrome.runtime.onMessage.addListener((request: SoundRequest) => {
     } else {
       musicAudio?.pause();
     }
+  }
+
+  // Handle music selection change
+  if (request.action === "music-changed" && request.selectedMusic) {
+    handlePlayMusic(request).catch(console.error);
   }
 });
 
@@ -94,22 +99,38 @@ const handlePlaySound = (request: SoundRequest) => {
 
 // ***************** Background Music ***************
 
-const handlePlayMusic = (request: SoundRequest) => {
-  musicAudio = new Audio(request.selectedMusic);
-  musicAudio.loop = true;
+const handlePlayMusic = async (request: SoundRequest) => {
+  try {
+    // Stop any existing music first
+    handleStopMusic();
 
-  if (request?.musicVolume !== undefined) {
-    musicAudio.volume = request.musicVolume;
+    if (!request.selectedMusic || !request.isMusicEnabled) return;
+
+    musicAudio = new Audio(request.selectedMusic);
+    musicAudio.loop = true;
+
+    if (request?.musicVolume !== undefined) {
+      musicAudio.volume = request.musicVolume;
+    }
+
+    // Only play if timer is running or it's a new music selection
+    if (request.isRunning || request.action === "playMusic") {
+      await musicAudio.play();
+    }
+  } catch (error) {
+    console.error("Error playing background music:", error);
+    handleStopMusic();
   }
-
-  musicAudio.play().catch((error: Error) => {
-    console.error("Error playing audio:", error);
-  });
 };
 
 const handleStopMusic = () => {
-  if (musicAudio) {
-    musicAudio.pause();
-    musicAudio.currentTime = 0;
+  try {
+    if (musicAudio) {
+      musicAudio.pause();
+      musicAudio.currentTime = 0;
+      musicAudio = null;
+    }
+  } catch (error) {
+    console.error("Error stopping music:", error);
   }
 };

@@ -2,7 +2,6 @@ import { useState, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import browser from "webextension-polyfill";
 import { Todo } from "@/types";
 
 const Todos = () => {
@@ -12,7 +11,7 @@ const Todos = () => {
 
   useEffect(() => {
     // Load todos from storage on mount
-    browser.storage.local.get("todos").then((result) => {
+    chrome.storage.local.get("todos").then((result) => {
       if (result.todos) setTodos(result.todos as Todo[]);
     });
   }, []);
@@ -30,13 +29,13 @@ const Todos = () => {
     setTodos(updatedTodos);
     setInputValue("");
     setError("");
-    browser.storage.local.set({ todos: updatedTodos });
+    chrome.storage.local.set({ todos: updatedTodos });
   };
 
   const removeTodo = (id: string) => {
     const updatedTodos = todos.filter((todo) => todo.id !== id);
     setTodos(updatedTodos);
-    browser.storage.local.set({ todos: updatedTodos });
+    chrome.storage.local.set({ todos: updatedTodos });
   };
 
   const toggleTodo = (id: string) => {
@@ -44,7 +43,7 @@ const Todos = () => {
       todo.id === id ? { ...todo, isCompleted: !todo.isCompleted } : todo
     );
     setTodos(updatedTodos);
-    browser.storage.local.set({ todos: updatedTodos });
+    chrome.storage.local.set({ todos: updatedTodos });
   };
 
   return (

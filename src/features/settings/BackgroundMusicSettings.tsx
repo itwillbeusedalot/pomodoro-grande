@@ -12,11 +12,10 @@ import BackgroundMusics from "@/data/background-musics";
 import { useTimer } from "@/context/TimerContext";
 
 const BackgroundMusicSettings = () => {
-  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [selectedMusic, setSelectedMusic] = useState(BackgroundMusics[0].value);
   const [musicVolume, setMusicVolume] = useState(0.5);
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const { isRunning } = useTimer();
+  const { isRunning, isBreak } = useTimer();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -36,23 +35,30 @@ const BackgroundMusicSettings = () => {
   };
 
   const handleSoundChange = (value: string) => {
-    setIsMusicPlaying(true);
     setSelectedMusic(value);
     chrome.storage.local.set({ selectedMusic: value });
+
+    // Send message to change music immediately if enabled
+    if (isMusicEnabled && !isBreak) {
+      chrome.runtime.sendMessage({
+        action: "music-changed",
+        selectedMusic: value,
+        isMusicEnabled,
+        musicVolume,
+        isRunning,
+      });
+    }
   };
 
   const handlePlay = () => {
-    setIsMusicPlaying(false);
     const sound = new Audio(selectedMusic);
     sound.volume = musicVolume;
     sound.play();
 
     audioRef.current = sound;
-    setIsMusicPlaying(true);
   };
 
   const handleStop = () => {
-    setIsMusicPlaying(false);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
@@ -72,10 +78,6 @@ const BackgroundMusicSettings = () => {
 
   const handleVolumeChange = (value: number) => {
     setMusicVolume(value);
-    if (audioRef.current) {
-      audioRef.current.volume = value;
-    }
-
     debouncedSave(value);
   };
 
@@ -83,8 +85,10 @@ const BackgroundMusicSettings = () => {
     chrome.storage.local
       .get(["selectedMusic", "isMusicEnabled", "musicVolume"])
       .then((data) => {
-        setSelectedMusic((data?.selectedMusic as string) ?? "clock.mp3");
-        setIsMusicEnabled((data?.isMusicEnabled as boolean) ?? false);
+        setSelectedMusic(
+          (data?.selectedMusic as string) ?? BackgroundMusics[0].value
+        );
+        setIsMusicEnabled((data?.isMusicEnabled as boolean) ?? true);
         setMusicVolume((data?.musicVolume as number) ?? 0.5);
       });
   }, []);
@@ -94,14 +98,14 @@ const BackgroundMusicSettings = () => {
       handleStop();
     }
 
-    if (isMusicEnabled && isMusicPlaying) {
+    if (selectedMusic && isMusicEnabled && !isRunning) {
       handlePlay();
     }
 
     return () => {
       if (audioRef.current) handleStop();
     };
-  }, [selectedMusic, musicVolume, isMusicPlaying]);
+  }, [selectedMusic, musicVolume, isMusicEnabled]);
 
   return (
     <div className="w-full flex flex-col gap-2">
@@ -111,7 +115,6 @@ const BackgroundMusicSettings = () => {
           className={`data-[state=checked]:bg-primary-custom`}
           checked={isMusicEnabled}
           onCheckedChange={handleEnableSound}
-          disabled
         />
       </div>
 
@@ -120,8 +123,7 @@ const BackgroundMusicSettings = () => {
         <Select
           value={selectedMusic}
           onValueChange={handleSoundChange}
-          // disabled={!isMusicEnabled || isRunning}
-          disabled
+          disabled={!isMusicEnabled}
         >
           <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select a sound" />
@@ -136,12 +138,6 @@ const BackgroundMusicSettings = () => {
         </Select>
       </div>
 
-      {isRunning && (
-        <p className="text-[10px] text-center mx-auto text-red-500">
-          Music cannot be changed while timer is running
-        </p>
-      )}
-
       <div className="flex items-center justify-between">
         <p>Volume</p>
         <div className="flex items-center gap-2">
@@ -153,15 +149,10 @@ const BackgroundMusicSettings = () => {
             max="1"
             step="0.1"
             className="accent-primary-custom"
-            disabled
           />
           <p className="text-xs w-5">{musicVolume * 100}</p>
         </div>
       </div>
-
-      <p className="text-xs text-center mx-auto mt-4 text-red-500">
-        Background music soon to be added
-      </p>
     </div>
   );
 };

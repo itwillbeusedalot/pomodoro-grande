@@ -1,6 +1,5 @@
 import { Todo } from "@/types";
 import { useEffect, useState } from "react";
-import browser from "webextension-polyfill";
 
 const TodoProgress = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -8,8 +7,8 @@ const TodoProgress = () => {
 
   useEffect(() => {
     const syncState = async () => {
-      const result = await browser.storage.local.get("todos");
-      setTodos((result.todos as Todo[]) ?? []);
+      const result = await chrome.storage.local.get("todos");
+      setTodos((result?.todos as Todo[]) ?? []);
     };
 
     syncState();
@@ -18,10 +17,10 @@ const TodoProgress = () => {
       if (changes.todos) setTodos(changes.todos.newValue);
     };
 
-    browser.storage.onChanged.addListener(handleStorageChange);
+    chrome.storage.onChanged.addListener(handleStorageChange);
 
     return () => {
-      browser.storage.onChanged.removeListener(handleStorageChange);
+      chrome.storage.onChanged.removeListener(handleStorageChange);
     };
   }, []);
 

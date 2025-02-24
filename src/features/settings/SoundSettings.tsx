@@ -8,7 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import debounce from "@/utils/debounce";
-import browser from "webextension-polyfill";
 import sounds from "@/data/sounds";
 
 const SoundSettings = () => {
@@ -21,7 +20,7 @@ const SoundSettings = () => {
 
   const handleEnableSound = (value: boolean) => {
     setIsSoundEnabled(value);
-    browser.storage.local.set({ isSoundEnabled: value });
+    chrome.storage.local.set({ isSoundEnabled: value });
 
     // Pause the audio if sound is disabled
     if (!value && audioRef.current) {
@@ -32,7 +31,7 @@ const SoundSettings = () => {
   const handleSoundChange = (value: string) => {
     setIsSoundPlaying(true);
     setSelectedSound(value);
-    browser.storage.local.set({ selectedSound: value });
+    chrome.storage.local.set({ selectedSound: value });
   };
 
   const handlePlay = () => {
@@ -55,7 +54,7 @@ const SoundSettings = () => {
 
   const debouncedSave = useCallback(
     debounce((value: number) => {
-      browser.storage.local.set({ soundVolume: value });
+      chrome.storage.local.set({ soundVolume: value });
     }, 500),
     []
   );
@@ -70,10 +69,10 @@ const SoundSettings = () => {
   };
 
   useEffect(() => {
-    browser.storage.local
+    chrome.storage.local
       .get(["selectedSound", "isSoundEnabled", "soundVolume"])
       .then((data) => {
-        setSelectedSound((data?.selectedSound as string) ?? "clock.mp3");
+        setSelectedSound((data?.selectedSound as string) ?? sounds[0].value);
         setIsSoundEnabled((data?.isSoundEnabled as boolean) ?? true);
         setSoundVolume((data?.soundVolume as number) ?? 0.5);
       });
