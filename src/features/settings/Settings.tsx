@@ -99,7 +99,7 @@ const SettingsPage = () => {
       <div>
         <MenuItem
           icon={<Star className="size-5" />}
-          title="Leave a Review"
+          title="Your feedback matters!"
           subtitle="Help us improve by leaving a review"
           url={REVIEW_PAGE}
           rightIcon={<ExternalLink className="w-4 h-4" />}
@@ -107,8 +107,8 @@ const SettingsPage = () => {
         />
         <MenuItem
           icon={<Bug className="size-5" />}
-          title="Report an Issue"
-          subtitle="Found a bug? Report it here"
+          title="Report & Suggest"
+          subtitle="Found a bug? Have an idea?"
           url="https://github.com/BulletOnli/pomodoro-grande/issues"
           rightIcon={<ExternalLink className="w-4 h-4" />}
           external
