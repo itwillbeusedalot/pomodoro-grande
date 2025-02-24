@@ -72,7 +72,7 @@ const SoundSettings = () => {
     chrome.storage.local
       .get(["selectedSound", "isSoundEnabled", "soundVolume"])
       .then((data) => {
-        setSelectedSound((data?.selectedSound as string) ?? "clock.mp3");
+        setSelectedSound((data?.selectedSound as string) ?? sounds[0].value);
         setIsSoundEnabled((data?.isSoundEnabled as boolean) ?? true);
         setSoundVolume((data?.soundVolume as number) ?? 0.5);
       });
