@@ -1,36 +1,26 @@
-# **Pomodoro Grande**: A Chrome Extension Built to Fix What Others Miss!
+# **Pomodoro Grande**: Advanced Pomodoro Timer!
 
 I explored several Pomodoro extensions on the Chrome Web Store but found some inconveniences in all of them. I also went through user reviews to identify the features people felt were missing in these extensions.
 
 This inspired me to create my own extension, [**Pomodoro Grande**](https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof). It combines the classic Pomodoro Technique with powerful productivity tools to help you stay focused and efficient. Key features include:
 
-### Timer Management
+### 🎵 Why You'll Love It
 
-- Dynamic countdown display on the extension badge
-- Customizable timer durations to match your productivity style
-- Intuitive controls for starting, stopping, and managing breaks
-- Quick break-skip functionality for flexibility
+- Built-in Background Music – Stay in the zone with focus-friendly sounds.
+- Customizable Pomodoro Timer – Set work/break intervals that fit your workflow.
+- Ultra Focus Mode – Block distractions for deep work sessions.
+- Website Blocker – Prevent time-wasting sites with domain & subdomain filtering.
+- To-Do List Integration – Organize your tasks without leaving your browser.
 
-### Track Your Progress
+### 🚀 Smarter Features for Better Productivity
 
-- Analyze your performance in the past 7 days.
+- Quick break-skip for flexibility.
+- Custom notifications – Choose alert sounds or go silent.
+- Session analytics – Track your focus performance.
 
-### Website Control
+### 🔒 Privacy First – No Data Collection
 
-- Domain-level blocking with subdomain support
-- URL whitelisting capabilities for permitted sites
-
-### Task Organization
-
-- Built-in to-do list functionality
-- Simple task creation and management
-
-### Smart Notifications
-
-- Desktop notifications when timers complete
-- Customizable notification sounds
-- Adjustable notification volume controls
-- Toggle notifications on/off as needed
+- Pomodoro Grande respects your privacy. No tracking, no ads – just productivity.
 
 ## How to Contribute 🚀
 
