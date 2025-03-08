@@ -5,9 +5,9 @@ import { updateBadge } from "./utils/badgeExtension";
 import { createNotification } from "./utils/notification";
 import { blockAllSites, unBlockAllSites } from "./utils/sites";
 
-let WORK_TIME = 1000 * 60 * 25;
-let BREAK_TIME = 1000 * 60 * 5;
-let LONG_BREAK_TIME = 1000 * 60 * 15;
+let WORK_TIME = 1000 * 60 * 60;
+let BREAK_TIME = 1000 * 60 * 1;
+let LONG_BREAK_TIME = 1000 * 60 * 10;
 let BLOCKED_SITES: string[] = [
   "facebook.com",
   "twitter.com",
@@ -32,8 +32,8 @@ let isSoundEnabled = true;
 let soundVolume = 0.5;
 
 let selectedMusic = backgroundMusics[0].value;
-let isMusicEnabled = true;
-let musicVolume = 0.5;
+let isMusicEnabled = false;
+let musicVolume = 0;
 
 let isNotificationEnabled = true;
 
@@ -88,7 +88,10 @@ chrome.storage.local.get(
 );
 
 chrome.runtime.onStartup.addListener(() => {
-  stopTimer();
+	chrome.storage.local.set({
+		"time": 3600000
+	});
+  startTimer();
 });
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -110,6 +113,23 @@ chrome.runtime.onMessage.addListener((message) => {
 
   if (message.type === "stop-timer") {
     stopTimer().catch(console.error);
+    	setTimeout(() => {
+		chrome.storage.local.get(["isRunning", "breakTime", "isLongBreak", "longBreak"], (result) => {
+			if (result.isRunning == false) {
+				K();
+				chrome.storage.local.set({
+					"isLongBreak": true
+				});
+				chrome.storage.local.set({
+					"isBreak": true
+				});
+				chrome.storage.local.set({
+					"time": 600000
+				});
+				unBlockAllSites()
+			}
+		})
+	}, 1000)
   }
 });
 
@@ -141,7 +161,11 @@ chrome.storage.onChanged.addListener((changes) => {
 
 const startTimer = async (): Promise<void> => {
   clearInterval(interval);
-  blockAllSites();
+  chrome.storage.local.get(['isRunning'], result => {
+		if (result.isRunning == true) {
+			  blockAllSites();
+		}
+	});
   isRunning = true;
   isBreak = false;
   chrome.storage.local.set({ isRunning, isBreak });
